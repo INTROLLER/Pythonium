@@ -5,7 +5,5 @@ def hash_password(password):
   hashed_password = bcrypt.hashpw(password.encode('utf-8'), salt)
   return hashed_password
 
-print(hash_password("password"))
-salt = bcrypt.gensalt()
-
-print(salt)
+password = input("Enter password: ")
+print(hash_password(password))
