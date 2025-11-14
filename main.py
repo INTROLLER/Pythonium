@@ -1,5 +1,8 @@
 import bcrypt
 import time
+import string
+
+chars = string.printable
 
 def hash_password(password, rounds=12):
   salt = bcrypt.gensalt(rounds=rounds)
