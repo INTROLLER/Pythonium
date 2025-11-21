@@ -1,24 +1,24 @@
 import bcrypt
 import time
 import string
+import itertools
+from hashlib import sha256
 
 chars = string.printable
+chars = chars.strip("\n")
+chars = chars.strip()
 
-def hash_password(password, rounds=12):
-  salt = bcrypt.gensalt(rounds=rounds)
-  hashed_password = bcrypt.hashpw(password.encode('utf-8'), salt)
+print(len(chars))
+print(chars)
+
+def hash_password(password):
+  hashed_password = sha256(password.encode('utf-8')).hexdigest()
   return hashed_password
 
 password = input("Enter password: ")
 print(hash_password(password))
-start = time.time()
 hash = hash_password("password")
-stop = time.time()
-print(hash, stop - start)
+print(hash)
 
-
-start2 = time.time()
-hash = hash_password("password", 4)
-stop2 = time.time()
-print(hash, stop2 - start2)
-print((stop - start)/(stop2 - start2))
+hash = hash_password("password")
+print(hash)
