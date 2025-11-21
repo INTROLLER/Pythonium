@@ -30,3 +30,7 @@ for combination in combination_list:
   if hashed == hash:
     print("Found password: " + "".join(str(x) for x in combination))
     break
+# password = input("Enter password: ")
+list = itertools.product(chars, repeat=3)
+for i in list:
+  print("".join(i))
