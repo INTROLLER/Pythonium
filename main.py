@@ -9,6 +9,15 @@ def hash_password(password, rounds=12):
   hashed_password = bcrypt.hashpw(password.encode('utf-8'), salt)
   return hashed_password
 
+def brute_force(hash, slice, charcount):
+  global chars
+  chars = chars[:slice]
+  guess = []
+  for i in range(charcount):
+    guess.append(chars[0])
+  print("".join(str(x) for x in guess))
+
+
 password = input("Enter password: ")
 print(hash_password(password))
 start = time.time()
