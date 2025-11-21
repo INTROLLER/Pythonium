@@ -15,6 +15,15 @@ def hash_password(password):
   hashed_password = sha256(password.encode('utf-8')).hexdigest()
   return hashed_password
 
+def brute_force(hash, slice, charcount):
+  global chars
+  chars = chars[:slice]
+  guess = []
+  for i in range(charcount):
+    guess.append(chars[0])
+  print("".join(str(x) for x in guess))
+
+
 password = input("Enter password: ")
 print(hash_password(password))
 hash = hash_password("password")
