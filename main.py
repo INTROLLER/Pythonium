@@ -24,10 +24,7 @@ def brute_force(hash, slice, charcount):
   print("".join(str(x) for x in guess))
 
 
-password = input("Enter password: ")
-print(hash_password(password))
-hash = hash_password("password")
-print(hash)
-
-hash = hash_password("password")
-print(hash)
+# password = input("Enter password: ")
+list = itertools.product(chars, repeat=3)
+for i in list:
+  print("".join(i))
