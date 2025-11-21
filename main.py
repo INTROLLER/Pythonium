@@ -21,6 +21,7 @@ def brute_force(hash, slice):
   chars = chars[:slice]
   guesses = 0
 
+  start = time.time()
   for i in range(1, 10):
     print("Testing all passwords with " + str(i) + " characters")
     combination_list = itertools.product(chars, repeat=i)
@@ -36,6 +37,10 @@ def brute_force(hash, slice):
       # Avbryt funktion om lösenord hittas
       if hashed == hash:
         print("Found password: " + "".join(str(x) for x in combination))
+        print("This took " + str(guesses) + " attempts to crack")
+        end = time.time()
+        elapsed = end - start
+        print("Elapsed time: " + str(elapsed) + " seconds")
         return
       
   # Lösenord hittades inte
