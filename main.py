@@ -37,7 +37,7 @@ def brute_force(hash, slice):
       # Avbryt funktion om lösenord hittas
       if hashed == hash:
         print("Found password: " + "".join(str(x) for x in combination))
-        print("This took " + str(guesses) + " attempts to crack")
+        print("Passwords attempted: " + str(guesses))
         end = time.time()
         elapsed = end - start
         print("Elapsed time: " + str(elapsed) + " seconds")
