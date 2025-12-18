@@ -3,16 +3,32 @@ import bcrypt
 import time
 import string
 import itertools
-from hashlib import sha256
+from hashlib import sha256, md5
 
 # Alla tecken
 chars = string.printable
 chars = chars.strip("\n")
 chars = chars.strip()
 
+lowercase = string.ascii_lowercase
+uppercase = string.ascii_uppercase
+digits = string.digits
+special_characters = string.punctuation
+
+hash_types = ["sha256", "bcrypt", "md5"]
+hash_type = None
+
 # Hasha lösenord
-def hash_password(password):
-  hashed_password = sha256(password.encode('utf-8')).hexdigest()
+def hash_password(password, hash=hash_type):
+  hashed_password = None
+
+  if hash == "sha256":
+    hashed_password = sha256(password.encode('utf-8')).hexdigest()
+  elif hash == "bcrypt":
+    hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt(rounds=4))
+  elif hash == "md5":
+    hashed_password = md5(password.encode('utf-8')).hexdigest()
+
   return hashed_password
 
 # Ren brute force-attack (hash är inputlösenord, slice är antal tecken från chars som ska vara med)
@@ -48,6 +64,7 @@ def brute_force(hash, slice):
 
   
 # Skicka in lösenord och kör brute force
+hash_type = hash_types[int(input("Hash type (sha256 <0>, bcrypt <1>, md5 <2>): "))]
 password = input("Password: ")
 hash = hash_password(password)
 brute_force(hash, 94)
