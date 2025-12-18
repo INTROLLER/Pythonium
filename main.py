@@ -47,7 +47,7 @@ def brute_force(hash, slice):
 
       # Progress-uppdatering för att se till att datorn inte går sönder
       guesses += 1
-      if guesses % 1000000 == 0:
+      if (time.time() - start) % 10 == 0:
         print("Currently guessed " + str(guesses) + " passwords")
 
       # Avbryt funktion om lösenord hittas
