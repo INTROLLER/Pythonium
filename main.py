@@ -46,16 +46,17 @@ def brute_force(hash, slice):
     for combination in combination_list:
       interval += time.time() - subtract
       subtract = time.time()
+      candidate = "".join(str(x) for x in combination)
 
       guesses += 1
 
       # Statusuppdatering för att se till att datorn inte går sönder
       if interval >= 10:
         print("Currently guessed " + str(guesses) + " passwords")
+        print("Last guessed password: " + candidate)
         interval = 0
 
       if hash_algo == "bcrypt":
-        candidate = "".join(str(x) for x in combination)
         if bcrypt.checkpw(candidate.encode(), hash):
           end(combination, guesses, start)
           return
