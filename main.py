@@ -4,6 +4,8 @@ import time
 import string
 import itertools
 from hashlib import sha256, md5
+import pickle
+import random
 
 # Alla tecken
 chars = string.printable
@@ -74,10 +76,32 @@ def end(combination, guesses, start):
   print("Passwords attempted: " + str(guesses))
   end = time.time()
   elapsed = end - start
+  data = []
+  try:
+    with open("benchmarks.pkl", "rb") as f:
+      data = pickle.load(f)
+  except:
+    pass
+
+  data.append((hash_algo, "all", len(password), elapsed, "python"))
+  with open("benchmarks.pkl", "wb") as f:
+    pickle.dump(data, f)
   print("Elapsed time: " + str(elapsed) + " seconds")
   
 # Skicka in lösenord och kör brute force
-hash_algo = hash_types[int(input("Hash type (sha256 <0>, bcrypt <1>, md5 <2>): "))]
-password = input("Password: ")
-hash = hash_password(password, hash_algo)
-brute_force(hash, 94)
+#hash_algo = hash_types[int(input("Hash type (sha256 <0>, bcrypt <1>, md5 <2>): "))]
+
+for i in range(15):
+  hash_algo = random.choice(hash_types)
+  password = ""
+  length = random.randint(1, 2)
+  for j in range(length):
+    password += random.choice(chars)
+  print("Password: " + password)
+  hash = hash_password(password, hash_algo)
+  brute_force(hash, 94)
+
+
+""" password = input("Password: ")
+  hash = hash_password(password, hash_algo)
+  brute_force(hash, 94) """

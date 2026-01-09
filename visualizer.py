@@ -1,28 +1,29 @@
 import matplotlib.pyplot as plt
+import pickle
 
 # Tabeller
 
 hash_to_symbol = {
-  "MD5": "o",
-  "SHA256": "s",
+  "md5": "o",
+  "sha256": "s",
   "bcrypt": "v"
 }
 
 charset_to_color = {
   "lower": "green",
   "lower+upper": "orange",
-  "lower+upper+symbols": "red"
+  "all": "red"
 }
 
-# Exempeldata (syntetisk)
-data = [
-    ("MD5", "lower", 5, 0.01),
-    ("SHA256", "lower", 10, 0.02),
-    ("bcrypt", "lower+upper", 15, 0.03),
-    ("bcrypt", "lower+upper", 20, 0.04),
-    ("bcrypt", "lower+upper+symbols", 25, 0.05),
-]
+# Tool to outline
 
+tool_outline = {
+    "python": "black",
+    "hashcat": "red"
+}
+
+with open("benchmarks.pkl", "rb") as f:
+    data = pickle.load(f)
 
 # Skapa figur
 plt.figure(figsize=(8, 5))
@@ -33,11 +34,11 @@ for row in data:
         row[3],
         color=charset_to_color[row[1]],
         alpha=0.7,
-        marker=hash_to_symbol[row[0]]
+        marker=hash_to_symbol[row[0]],
+        edgecolors=tool_outline[row[4]]
     )
 
 # Axlar och skala
-plt.yscale("log")
 plt.xlabel("Lösenordslängd")
 plt.ylabel("Tid till knäckning (sekunder, log-skala)")
 plt.title("Brute-force benchmark")
@@ -46,10 +47,6 @@ plt.title("Brute-force benchmark")
 for h, c in hash_to_symbol.items():
     plt.scatter([], [], marker=c, label=h, color="black")
 plt.legend(title="Hashfunktion")
-
-for c, h in charset_to_color.items():
-    plt.scatter([], [], color=h, label=c)
-plt.legend(title="Teckenkombination")
 
 plt.tight_layout()
 plt.show()
