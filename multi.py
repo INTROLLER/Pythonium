@@ -4,6 +4,7 @@ import time
 import string
 from hashlib import sha256, md5
 import multiprocessing
+import pickle
 
 
 def hash_password(password, algo):
@@ -78,6 +79,20 @@ def benchmark(str, hash_algo, qcounter):
         break
 
 
+def save_results(algo, charset, length, time, tool):
+  data = []
+  try:
+    with open("benchmarks.pkl", "rb") as f:
+      data = pickle.load(f)
+  except:
+    pass
+
+  data.append((algo, charset, length, time, tool))
+
+  with open("benchmarks.pkl", "wb") as f:
+    pickle.dump(data, f)
+
+
 # Huvudprocess
 if __name__ == '__main__':
   # Alla tecken
@@ -138,6 +153,9 @@ if __name__ == '__main__':
           elapsed = time_end - time_start
           print("Found password: " + guess)
           print("Elapsed time: " + str(elapsed))
+
+          save_results(hash_algo, "all", len(password), elapsed, "python")
+
           for p in processes:
             # Stäng ned allt
             p.terminate()
