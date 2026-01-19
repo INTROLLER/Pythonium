@@ -40,7 +40,7 @@ for row in data:
 
 # Axlar och skala
 plt.xlabel("Lösenordslängd")
-plt.ylabel("Tid till knäckning (sekunder, log-skala)")
+plt.ylabel("Tid till knäckning (sekunder)")
 plt.title("Brute-force benchmark")
 
 # Legend (manuell för tydlighet)
