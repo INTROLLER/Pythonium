@@ -20,7 +20,6 @@ hash_type = int()
 
 # Hasha lösenord
 def hash_password(password, algo):
-
   if algo == "sha256":
     hashed_password = sha256(password.encode('utf-8')).hexdigest()
   elif algo == "bcrypt":
@@ -31,53 +30,47 @@ def hash_password(password, algo):
   return hashed_password
 
 # Ren brute force-attack (hash är inputlösenord, slice är antal tecken från chars som ska vara med)
-def brute_force(hash, slice):
-  global chars
-  chars = chars[:slice]
+def brute_force(hash, chars):
   guesses = 0
 
-  start = time.time()
+  start = time.monotonic()
   for i in range(1, 10):
     print("Testing all passwords with " + str(i) + " characters")
     combination_list = itertools.product(chars, repeat=i)
-    interval = 0
-    subtract = start
 
     for combination in combination_list:
-      interval += time.time() - subtract
-      subtract = time.time()
-      candidate = "".join(str(x) for x in combination)
+      candidate = "".join(combination)
 
       guesses += 1
 
       # Statusuppdatering för att se till att datorn inte går sönder
-      if interval >= 10:
-        print("Currently guessed " + str(guesses) + " passwords")
-        print("Last guessed password: " + candidate)
-        interval = 0
+      if guesses % 1000000 == 0:
+        print("Currently guessed " + str(guesses) + " passwords. Last guessed password: " + candidate)
 
       if hash_algo == "bcrypt":
         if bcrypt.checkpw(candidate.encode(), hash):
-          end(combination, guesses, start)
+          end(candidate, guesses, start)
           return
       else:
-        hashed = hash_password("".join(str(x) for x in combination), hash_algo)
+        hashed = hash_password(candidate, hash_algo)
         if hashed == hash:
-          end(combination, guesses, start)
+          end(candidate, guesses, start)
           return
       
   # Lösenord hittades inte
   print("Couldn't find password")
 
-def end(combination, guesses, start):
-  print("Found password: " + "".join(str(x) for x in combination))
+def end(candidate, guesses, start):
+  print("Found password: " + candidate)
   print("Passwords attempted: " + str(guesses))
-  end = time.time()
+  end = time.monotonic()
   elapsed = end - start
   print("Elapsed time: " + str(elapsed) + " seconds")
+  efficiency = guesses / elapsed
+  print("Average guessing efficiency: " + str(efficiency) + " hashes/s")
   
 # Skicka in lösenord och kör brute force
 hash_algo = hash_types[int(input("Hash type (sha256 <0>, bcrypt <1>, md5 <2>): "))]
 password = input("Password: ")
 hash = hash_password(password, hash_algo)
-brute_force(hash, 94)
+brute_force(hash, chars[:94])
