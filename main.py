@@ -4,6 +4,8 @@ import time
 import string
 import itertools
 from hashlib import sha256, md5
+import pickle
+import random
 
 # Alla tecken
 chars = string.printable
@@ -65,6 +67,16 @@ def end(candidate, guesses, start):
   print("Passwords attempted: " + str(guesses))
   end = time.monotonic()
   elapsed = end - start
+  data = []
+  try:
+    with open("benchmarks.pkl", "rb") as f:
+      data = pickle.load(f)
+  except:
+    pass
+
+  data.append((hash_algo, "all", len(password), elapsed, "python"))
+  with open("benchmarks.pkl", "wb") as f:
+    pickle.dump(data, f)
   print("Elapsed time: " + str(elapsed) + " seconds")
   efficiency = guesses / elapsed
   print("Average guessing efficiency: " + str(efficiency) + " hashes/s")
@@ -73,4 +85,4 @@ def end(candidate, guesses, start):
 hash_algo = hash_types[int(input("Hash type (sha256 <0>, bcrypt <1>, md5 <2>): "))]
 password = input("Password: ")
 hash = hash_password(password, hash_algo)
-brute_force(hash, chars[:94])
+brute_force(hash, 94)
