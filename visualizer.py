@@ -35,7 +35,6 @@ with open("benchmarks.pkl", "rb") as f:
 plt.figure(figsize=(8, 5))
 
 for row in data:
-    print(row[1])
     plt.scatter(
         row[2],
         row[3],

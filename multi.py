@@ -11,6 +11,7 @@ import random
 chars = string.printable
 chars = chars.strip("\n")
 chars = chars.strip()
+chars = random.sample(chars, len(chars))
 
 lowercase = string.ascii_lowercase
 uppercase = string.ascii_uppercase
@@ -106,10 +107,10 @@ def save_results(algo, charset, length, time, tool):
   with open("benchmarks.pkl", "wb") as f:
     pickle.dump(data, f)
 
-def main(mode, hash_algo, proc, random_pass=False, length=None, password=None):
+def main(mode, hash_algo, proc, random_pass=False, length=None, password=None, charset=""):
   if mode == 0:
     if random_pass:
-      password = "".join(random.choices(chars, k=length))
+      password = "".join(random.choices(charset, k=length))
 
     hash = hash_password(password, hash_algo)
     print("Using " + str(proc) + " processes to brute force...")
@@ -204,10 +205,19 @@ if __name__ == '__main__':
   password = None
   full_benchmark = False
   repeat = 1
+  charset = ""
   if mode == 0:
     enable_random = bool(int(input("Use random password? (0/1): ")))
     if enable_random:
       length = int(input("Password length: "))
+      if input("Use special characters? (0/1): ") == "1":
+        charset += special_characters
+      if input("Use digits? (0/1): ") == "1":
+        charset += digits
+      if input("Use uppercase? (0/1): ") == "1":
+        charset += uppercase
+      if input("Use lowercase? (0/1): ") == "1":
+        charset += lowercase
       full_benchmark = bool(int(input("Benchmark? (0/1): ")))
       repeat = int(input("Repeat? (0/1): "))
       if repeat == 1:
@@ -228,12 +238,12 @@ if __name__ == '__main__':
     if test_all_hashes and full_benchmark:
       for hashtype in hash_types:
         for i in range(1, length + 1):
-          main(mode, hashtype, proc, random_pass=enable_random, length=i, password=password)
+          main(mode, hashtype, proc, random_pass=enable_random, length=i, password=password, charset=charset)
     elif test_all_hashes:
       for hashtype in hash_types:
-        main(mode, hashtype, proc, random_pass=enable_random, length=length, password=password)
+        main(mode, hashtype, proc, random_pass=enable_random, length=length, password=password, charset=charset)
     elif full_benchmark:
       for i in range(1, length + 1):
-        main(mode, hash_algo, proc, random_pass=enable_random, length=i, password=password)
+        main(mode, hash_algo, proc, random_pass=enable_random, length=i, password=password, charset=charset)
     else:
-      main(mode, hash_algo, proc, random_pass=enable_random, length=length, password=password)
+      main(mode, hash_algo, proc, random_pass=enable_random, length=length, password=password, charset=charset)
