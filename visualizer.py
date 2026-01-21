@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import matplotlib.colors as mcolors
 import pickle
 
 # Tabeller
@@ -22,6 +23,11 @@ tool_outline = {
     "hashcat": "red"
 }
 
+def red_green_color(weight, vmin=0.5, vmax=4.5):
+    norm = mcolors.Normalize(vmin=vmin, vmax=vmax)
+    cmap = plt.cm.RdYlGn  # red → yellow → green
+    return cmap(norm(weight))
+
 with open("benchmarks.pkl", "rb") as f:
     data = pickle.load(f)
 
@@ -29,10 +35,11 @@ with open("benchmarks.pkl", "rb") as f:
 plt.figure(figsize=(8, 5))
 
 for row in data:
+    print(row[1])
     plt.scatter(
         row[2],
         row[3],
-        color=charset_to_color[row[1]],
+        color=red_green_color(weight=row[1]),
         alpha=0.7,
         marker=hash_to_symbol[row[0]],
         edgecolors=tool_outline[row[4]]

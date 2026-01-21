@@ -5,6 +5,20 @@ import string
 from hashlib import sha256, md5
 import multiprocessing
 import pickle
+import random
+
+# Alla tecken
+chars = string.printable
+chars = chars.strip("\n")
+chars = chars.strip()
+
+lowercase = string.ascii_lowercase
+uppercase = string.ascii_uppercase
+digits = string.digits
+special_characters = string.punctuation
+
+hash_types = ["sha256", "bcrypt", "md5"]
+hash_type = int()
 
 
 def hash_password(password, algo):
@@ -92,29 +106,11 @@ def save_results(algo, charset, length, time, tool):
   with open("benchmarks.pkl", "wb") as f:
     pickle.dump(data, f)
 
-
-# Huvudprocess
-if __name__ == '__main__':
-  # Alla tecken
-  chars = string.printable
-  chars = chars.strip("\n")
-  chars = chars.strip()
-
-  lowercase = string.ascii_lowercase
-  uppercase = string.ascii_uppercase
-  digits = string.digits
-  special_characters = string.punctuation
-
-  hash_types = ["sha256", "bcrypt", "md5"]
-  hash_type = int()
-
-  # Skicka in lösenord och kör brute force
-  mode = int(input("Mode (Brute force <0>, Benchmark <1>: )"))
-  hash_algo = hash_types[int(input("Hash type (sha256 <0>, bcrypt <1>, md5 <2>): "))]
-  proc = int(input("Amount of processes to be used: "))
-
+def main(mode, hash_algo, proc, random_pass=False, length=None, password=None):
   if mode == 0:
-    password = input("Password: ")
+    if random_pass:
+      password = "".join(random.choices(chars, k=length))
+
     hash = hash_password(password, hash_algo)
     print("Using " + str(proc) + " processes to brute force...")
 
@@ -154,7 +150,18 @@ if __name__ == '__main__':
           print("Found password: " + guess)
           print("Elapsed time: " + str(elapsed))
 
-          save_results(hash_algo, "all", len(password), elapsed, "python")
+          color_weight = 0.0
+
+          if not set(password).isdisjoint(special_characters):
+            color_weight += 2.0
+          if not set(password).isdisjoint(digits):
+            color_weight += 0.5
+          if not set(password).isdisjoint(uppercase):
+            color_weight += 1.0
+          if not set(password).isdisjoint(lowercase):
+            color_weight += 1.0
+
+          save_results(hash_algo, color_weight, len(password), elapsed, "python")
 
           for p in processes:
             # Stäng ned allt
@@ -187,3 +194,46 @@ if __name__ == '__main__':
 
     efficiency = total / 10
     print("Estimated pure hashing efficiency: " + str(efficiency) + " H/s")
+
+# Huvudprocess
+if __name__ == '__main__':
+  # Skicka in lösenord och kör brute force
+  mode = int(input("Mode (Brute force <0>, Benchmark <1>: )"))
+  enable_random = False
+  length = None
+  password = None
+  full_benchmark = False
+  repeat = 1
+  if mode == 0:
+    enable_random = bool(int(input("Use random password? (0/1): ")))
+    if enable_random:
+      length = int(input("Password length: "))
+      full_benchmark = bool(int(input("Benchmark? (0/1): ")))
+      repeat = int(input("Repeat? (0/1): "))
+      if repeat == 1:
+        repeat = int(input("Repeat amount: "))
+      else:
+        repeat = 1
+    else:
+      password = input("Password: ")
+
+    test_all_hashes = bool(int(input("Test all hashes? (0/1): ")))
+    if not test_all_hashes:
+      hash_algo = hash_types[int(input("Hash type (sha256 <0>, bcrypt <1>, md5 <2>): "))]
+  else:
+    hash_algo = hash_types[int(input("Hash type (sha256 <0>, bcrypt <1>, md5 <2>): "))]
+  proc = int(input("Amount of processes to be used: "))
+
+  for j in range(repeat):
+    if test_all_hashes and full_benchmark:
+      for hashtype in hash_types:
+        for i in range(1, length + 1):
+          main(mode, hashtype, proc, random_pass=enable_random, length=i, password=password)
+    elif test_all_hashes:
+      for hashtype in hash_types:
+        main(mode, hashtype, proc, random_pass=enable_random, length=length, password=password)
+    elif full_benchmark:
+      for i in range(1, length + 1):
+        main(mode, hash_algo, proc, random_pass=enable_random, length=i, password=password)
+    else:
+      main(mode, hash_algo, proc, random_pass=enable_random, length=length, password=password)
