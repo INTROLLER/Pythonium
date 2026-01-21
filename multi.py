@@ -203,7 +203,7 @@ if __name__ == '__main__':
   enable_random = False
   length = None
   password = None
-  full_benchmark = False
+  iterate = False
   repeat = 1
   charset = ""
   if mode == 0:
@@ -218,7 +218,7 @@ if __name__ == '__main__':
         charset += uppercase
       if input("Use lowercase? (0/1): ") == "1":
         charset += lowercase
-      full_benchmark = bool(int(input("Benchmark? (0/1): ")))
+      iterate = bool(int(input("Iterate through length? (0/1): ")))
       repeat = int(input("Repeat? (0/1): "))
       if repeat == 1:
         repeat = int(input("Repeat amount: "))
@@ -235,14 +235,14 @@ if __name__ == '__main__':
   proc = int(input("Amount of processes to be used: "))
 
   for j in range(repeat):
-    if test_all_hashes and full_benchmark:
+    if test_all_hashes and iterate:
       for hashtype in hash_types:
         for i in range(1, length + 1):
           main(mode, hashtype, proc, random_pass=enable_random, length=i, password=password, charset=charset)
     elif test_all_hashes:
       for hashtype in hash_types:
         main(mode, hashtype, proc, random_pass=enable_random, length=length, password=password, charset=charset)
-    elif full_benchmark:
+    elif iterate:
       for i in range(1, length + 1):
         main(mode, hash_algo, proc, random_pass=enable_random, length=i, password=password, charset=charset)
     else:
