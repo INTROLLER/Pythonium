@@ -25,7 +25,7 @@ tool_outline = {
 
 def red_green_color(weight, vmin=0.5, vmax=4.5):
     norm = mcolors.Normalize(vmin=vmin, vmax=vmax)
-    cmap = plt.cm.RdYlGn  # red → yellow → green
+    cmap = plt.cm.RdYlGn_r  # red → yellow → green
     return cmap(norm(weight))
 
 with open("benchmarks.pkl", "rb") as f:
