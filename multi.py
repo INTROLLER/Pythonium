@@ -225,8 +225,8 @@ if __name__ == '__main__':
   iterate = False
   repeat = 1
   charset = ""
+  tool = int(input("Tool (python <0>, hashcat <1>): "))
   if mode == 0:
-    tool = int(input("Tool (python <0>, hashcat <1>): "))
     enable_random = bool(int(input("Use random password? (0/1): ")))
     if enable_random:
       length = int(input("Password length: "))
