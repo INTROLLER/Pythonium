@@ -124,7 +124,7 @@ def generate_password(length, charset):
 
   return password
 
-def main(mode, hash, proc, password):
+def main(mode, hash, proc):
   if mode == 0:
     print("Using " + str(proc) + " processes to brute force...")
 
