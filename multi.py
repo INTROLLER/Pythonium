@@ -103,6 +103,20 @@ def save_results(algo, charset, length, time, tool):
   with open("benchmarks.pkl", "wb") as f:
     pickle.dump(data, f)
 
+def get_color_weight(password):
+  color_weight = 0.0
+
+  if not set(password).isdisjoint(special_characters):
+    color_weight += 2.0
+  if not set(password).isdisjoint(digits):
+    color_weight += 0.5
+  if not set(password).isdisjoint(uppercase):
+    color_weight += 1.0
+  if not set(password).isdisjoint(lowercase):
+    color_weight += 1.0
+
+  return color_weight
+
 def generate_password(length, charset):
   password = ""
   for i in range(length):
@@ -151,16 +165,7 @@ def main(mode, hash_algo, proc, password):
           print("Found password: " + guess)
           print("Elapsed time: " + str(elapsed))
 
-          color_weight = 0.0
-
-          if not set(password).isdisjoint(special_characters):
-            color_weight += 2.0
-          if not set(password).isdisjoint(digits):
-            color_weight += 0.5
-          if not set(password).isdisjoint(uppercase):
-            color_weight += 1.0
-          if not set(password).isdisjoint(lowercase):
-            color_weight += 1.0
+          color_weight = get_color_weight(password)
 
           save_results(hash_algo, color_weight, len(password), elapsed, "python")
 
@@ -196,6 +201,15 @@ def main(mode, hash_algo, proc, password):
     efficiency = total / 10
     print("Estimated pure hashing efficiency: " + str(efficiency) + " H/s")
 
+def hashcat_main(hash, hash_algo):
+  start = time.monotonic()
+  result = hashcat.crack(hash, hashcat.hash_map[hash_algo])
+  end = time.monotonic()
+  elapsed = end - start
+  print(result.stdout)
+  color_weight = get_color_weight(password)
+  save_results(hash_algo, color_weight, len(password), elapsed, "hashcat")
+
 # Huvudprocess
 if __name__ == '__main__':
   # Skicka in lösenord och kör brute force
@@ -207,8 +221,8 @@ if __name__ == '__main__':
   iterate = False
   repeat = 1
   charset = ""
+  tool = int(input("Tool (python <0>, hashcat <1>): "))
   if mode == 0:
-    tool = int(input("Tool (python <0>, hashcat <1>): "))
     enable_random = bool(int(input("Use random password? (0/1): ")))
     if enable_random:
       length = int(input("Password length: "))
@@ -220,6 +234,7 @@ if __name__ == '__main__':
         charset += uppercase
       if input("Use lowercase? (0/1): ") == "1":
         charset += lowercase
+      password = generate_password(length, charset)
       iterate = bool(int(input("Iterate through length? (0/1): ")))
       repeat = int(input("Repeat? (0/1): "))
       if repeat == 1:
@@ -238,8 +253,6 @@ if __name__ == '__main__':
   if tool == 0:
     proc = int(input("Amount of processes to be used: "))
 
-  password = generate_password(length, charset)
-
   for j in range(repeat):
     if test_all_hashes and iterate:
       for hashtype in hash_types:
@@ -248,28 +261,24 @@ if __name__ == '__main__':
           if tool == 0:
             main(mode, hash, proc)
           else:
-            result = hashcat.crack(hash, hashcat.hash_map[hashtype])
-            print(result.stdout)
+            hashcat_main(hash, hashtype)
     elif test_all_hashes:
       for hashtype in hash_types:
         hash = hash_password(password, hashtype)
         if tool == 0:
           main(mode, hash, proc)
         else:
-          result = hashcat.crack(hash, hashcat.hash_map[hashtype])
-          print(result.stdout)
+          hashcat_main(hash, hashtype)
     elif iterate:
       for i in range(1, length + 1):
         hash = hash_password(password, hash_algo)
         if tool == 0:
           main(mode, hash, proc)
         else:
-          result = hashcat.crack(hash, hashcat.hash_map[hash_algo])
-          print(result.stdout)
+          hashcat_main(hash, hash_algo)
     else:
       hash = hash_password(password, hash_algo)
       if tool == 0:
         main(mode, hash, proc)
       else:
-        result = hashcat.crack(hash, hashcat.hash_map[hash_algo])
-        print(result.stdout)
+        hashcat_main(hash, hash_algo)
