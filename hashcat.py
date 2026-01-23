@@ -1,6 +1,6 @@
 import subprocess
 from pathlib import Path
-import time
+import re
 
 BASE = Path(__file__).resolve().parent
 HASHCAT_DIR = BASE / "hashcat-7.1.2"
@@ -20,10 +20,10 @@ def crack(hash, hashtype):
         hash,
         "?a?a?a?a?a",
         "--increment",
-        "--potfile-disable"
+        "--potfile-disable",
+        "--status",
+        "--machine-readable"
     ]
-
-    start = time.monotonic()
 
     result = subprocess.run(
         cmd,
@@ -32,7 +32,18 @@ def crack(hash, hashtype):
         cwd=HASHCAT_DIR
     )
 
-    end = time.monotonic()
-    elapsed = end - start
+    exec_match = re.search(r'EXEC_RUNTIME\s+([\d\.]+)', result.stdout)
+    exec_runtime = float(exec_match.group(1)) if exec_match else None
 
-    return (result, elapsed)
+    # Extract PROGRESS (current and total)
+    progress_match = re.search(r'PROGRESS\s+(\d+)\s+(\d+)', result.stdout)
+    if progress_match:
+        current, total = map(int, progress_match.groups())
+        if current == total:
+            print("Fully cracked! EXEC_RUNTIME:", exec_runtime)
+        else:
+            print("Not fully cracked, skipping.")
+    else:
+        print("PROGRESS info not found")
+
+    return (result, exec_runtime)
