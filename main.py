@@ -208,6 +208,8 @@ def main(mode, hash, proc, hash_algo):
 def hashcat_main(hash, hash_algo):
   result = hashcat.crack(hash, hashcat.hash_map[hash_algo])
   print(result[0].stdout)
+  print("----")
+  print(result[1])
   color_weight = get_color_weight(password)
   save_results(hash_algo, color_weight, len(password), result[1], "hashcat")
 
@@ -259,7 +261,7 @@ if __name__ == '__main__':
       for hashtype in hash_types:
         for i in range(1, length + 1):
           if mode == 0:
-            password = generate_password(length, charset)
+            password = generate_password(i, charset)
             hash = hash_password(password, hashtype)
 
           if tool == 0:
@@ -279,7 +281,7 @@ if __name__ == '__main__':
     elif iterate:
       for i in range(1, length + 1):
         if mode == 0:
-          password = generate_password(length, charset)
+          password = generate_password(i, charset)
           hash = hash_password(password, hash_algo)
 
         if tool == 0:
