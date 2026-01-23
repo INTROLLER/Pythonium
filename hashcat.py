@@ -14,36 +14,47 @@ hash_map = {
 
 def crack(hash, hashtype):
     cmd = [
-        HASHCAT_EXE,
-        "-m", hashtype,                  # hash type (MD5 example)
-        "-a", "3",                  # attack mode (dictionary)
+        str(HASHCAT_EXE),
+        "-m", hashtype,
+        "-a", "3",
         hash,
         "?a?a?a?a?a",
         "--increment",
         "--potfile-disable",
         "--status",
-        "--machine-readable"
+        "--machine-readable",
+        "--quiet",
     ]
 
-    result = subprocess.run(
+    proc = subprocess.Popen(
         cmd,
-        capture_output=True,
+        cwd=HASHCAT_DIR,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.DEVNULL,
         text=True,
-        cwd=HASHCAT_DIR
+        bufsize=1,
     )
 
-    exec_match = re.search(r'EXEC_RUNTIME\s+([\d\.]+)', result.stdout)
-    exec_runtime = float(exec_match.group(1)) if exec_match else None
+    exec_runtime = None
+    cracked = False
 
-    # Extract PROGRESS (current and total)
-    progress_match = re.search(r'PROGRESS\s+(\d+)\s+(\d+)', result.stdout)
-    if progress_match:
-        current, total = map(int, progress_match.groups())
-        if current == total:
-            print("Fully cracked! EXEC_RUNTIME:", exec_runtime)
-        else:
-            print("Not fully cracked, skipping.")
-    else:
-        print("PROGRESS info not found")
+    for line in proc.stdout:
+        # STATUS 6 = cracked, STATUS 5 = exhausted
+        if not line.startswith("STATUS"):
+            continue
 
-    return (result, exec_runtime)
+        parts = line.split()
+
+        status = parts[1]
+        if status == "6":
+            cracked = True
+
+            # machine-readable fields are fixed-position
+            # EXEC_RUNTIME index is stable
+            exec_runtime = float(parts[parts.index("EXEC_RUNTIME") + 1])
+            proc.terminate()
+            break
+
+    proc.wait()
+
+    return (proc, exec_runtime)

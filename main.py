@@ -207,16 +207,15 @@ def main(mode, hash, proc, hash_algo):
 
 def hashcat_main(hash, hash_algo):
   result = hashcat.crack(hash, hashcat.hash_map[hash_algo])
-  print(result[0].stdout)
-  print("----")
   print(result[1])
+  print("----")
   color_weight = get_color_weight(password)
   save_results(hash_algo, color_weight, len(password), result[1], "hashcat")
 
 # Huvudprocess
 if __name__ == '__main__':
   # Skicka in lösenord och kör brute force
-  mode = int(input("Mode (Brute force <0>, Benchmark <1>: )"))
+  mode = int(input("Mode (Brute force <0>, Benchmark <1>): "))
   enable_random = False
   test_all_hashes = False
   length = None
