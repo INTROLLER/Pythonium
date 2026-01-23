@@ -206,13 +206,10 @@ def main(mode, hash, proc, hash_algo):
     print("Estimated pure hashing efficiency: " + str(efficiency) + " H/s")
 
 def hashcat_main(hash, hash_algo):
-  start = time.monotonic()
   result = hashcat.crack(hash, hashcat.hash_map[hash_algo])
-  end = time.monotonic()
-  elapsed = end - start
-  print(result.stdout)
+  print(result[0].stdout)
   color_weight = get_color_weight(password)
-  save_results(hash_algo, color_weight, len(password), elapsed, "hashcat")
+  save_results(hash_algo, color_weight, len(password), result[1], "hashcat")
 
 # Huvudprocess
 if __name__ == '__main__':
@@ -258,34 +255,42 @@ if __name__ == '__main__':
     proc = int(input("Amount of processes to be used: "))
 
   for j in range(repeat):
-    if mode == 0:
-      password = generate_password(length, charset)
-
-    if mode == 0 and not test_all_hashes:
-      hash = hash_password(password, hash_algo)
     if test_all_hashes and iterate:
       for hashtype in hash_types:
         for i in range(1, length + 1):
-          hash = hash_password(password, hashtype)
+          if mode == 0:
+            password = generate_password(length, charset)
+            hash = hash_password(password, hashtype)
+
           if tool == 0:
             main(mode, hash, proc, hashtype)
           else:
             hashcat_main(hash, hashtype)
     elif test_all_hashes:
       for hashtype in hash_types:
-        hash = hash_password(password, hashtype)
+        if mode == 0:
+          password = generate_password(length, charset)
+          hash = hash_password(password, hashtype)
+
         if tool == 0:
           main(mode, hash, proc, hashtype)
         else:
           hashcat_main(hash, hashtype)
     elif iterate:
       for i in range(1, length + 1):
-        print(hash_algo)
+        if mode == 0:
+          password = generate_password(length, charset)
+          hash = hash_password(password, hash_algo)
+
         if tool == 0:
           main(mode, hash, proc, hash_algo)
         else:
           hashcat_main(hash, hash_algo)
     else:
+      if mode == 0:
+        password = generate_password(length, charset)
+        hash = hash_password(password, hash_algo)
+
       if tool == 0:
         main(mode, hash, proc, hash_algo)
       else:

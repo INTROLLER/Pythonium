@@ -1,5 +1,6 @@
 import subprocess
 from pathlib import Path
+import time
 
 BASE = Path(__file__).resolve().parent
 HASHCAT_DIR = BASE / "hashcat-7.1.2"
@@ -22,6 +23,8 @@ def crack(hash, hashtype):
         "--potfile-disable"
     ]
 
+    start = time.monotonic()
+
     result = subprocess.run(
         cmd,
         capture_output=True,
@@ -29,4 +32,7 @@ def crack(hash, hashtype):
         cwd=HASHCAT_DIR
     )
 
-    return result
+    end = time.monotonic()
+    elapsed = end - start
+
+    return (result, elapsed)
