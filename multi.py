@@ -88,10 +88,9 @@ def benchmark(str, hash_algo, qcounter):
     hash_password(str, hash_algo)
     count += 1
 
-    if count % iterations == 0:
-      if time.monotonic() - time_start >= 10:
-        qcounter.put(count)
-        break
+    if time.monotonic() - time_start >= 10:
+      qcounter.put(count)
+      break
 
 
 def save_results(algo, charset, length, time, tool):
@@ -200,6 +199,7 @@ def main(mode, hash_algo, proc, random_pass=False, length=None, password=None, c
 if __name__ == '__main__':
   # Skicka in lösenord och kör brute force
   mode = int(input("Mode (Brute force <0>, Benchmark <1>: )"))
+  test_all_hashes = False
   enable_random = False
   length = None
   password = None
