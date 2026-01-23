@@ -124,9 +124,8 @@ def generate_password(length, charset):
 
   return password
 
-def main(mode, hash_algo, proc, password):
+def main(mode, hash, proc, password):
   if mode == 0:
-    hash = hash_password(password, hash_algo)
     print("Using " + str(proc) + " processes to brute force...")
 
     base = len(chars)
