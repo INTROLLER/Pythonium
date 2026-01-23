@@ -6,6 +6,7 @@ from hashlib import sha256, md5
 import multiprocessing
 import pickle
 import random
+import hashcat
 
 # Alla tecken
 chars = string.printable
@@ -107,11 +108,15 @@ def save_results(algo, charset, length, time, tool):
   with open("benchmarks.pkl", "wb") as f:
     pickle.dump(data, f)
 
-def main(mode, hash_algo, proc, random_pass=False, length=None, password=None, charset=""):
-  if mode == 0:
-    if random_pass:
-      password = "".join(random.choices(charset, k=length))
+def generate_password(length, charset):
+  password = ""
+  for i in range(length):
+    password += random.choice(charset)
 
+  return password
+
+def main(mode, hash_algo, proc, password):
+  if mode == 0:
     hash = hash_password(password, hash_algo)
     print("Using " + str(proc) + " processes to brute force...")
 
@@ -207,6 +212,7 @@ if __name__ == '__main__':
   repeat = 1
   charset = ""
   if mode == 0:
+    tool = int(input("Tool (python <0>, hashcat <1>): "))
     enable_random = bool(int(input("Use random password? (0/1): ")))
     if enable_random:
       length = int(input("Password length: "))
@@ -232,18 +238,42 @@ if __name__ == '__main__':
       hash_algo = hash_types[int(input("Hash type (sha256 <0>, bcrypt <1>, md5 <2>): "))]
   else:
     hash_algo = hash_types[int(input("Hash type (sha256 <0>, bcrypt <1>, md5 <2>): "))]
-  proc = int(input("Amount of processes to be used: "))
+
+  if tool == 0:
+    proc = int(input("Amount of processes to be used: "))
+
+  password = generate_password(length, charset)
 
   for j in range(repeat):
     if test_all_hashes and iterate:
       for hashtype in hash_types:
         for i in range(1, length + 1):
-          main(mode, hashtype, proc, random_pass=enable_random, length=i, password=password, charset=charset)
+          hash = hash_password(password, hashtype)
+          if tool == 0:
+            main(mode, hash, proc)
+          else:
+            result = hashcat.crack(hash, hashcat.hash_map[hashtype])
+            print(result.stdout)
     elif test_all_hashes:
       for hashtype in hash_types:
-        main(mode, hashtype, proc, random_pass=enable_random, length=length, password=password, charset=charset)
+        hash = hash_password(password, hashtype)
+        if tool == 0:
+          main(mode, hash, proc)
+        else:
+          result = hashcat.crack(hash, hashcat.hash_map[hashtype])
+          print(result.stdout)
     elif iterate:
       for i in range(1, length + 1):
-        main(mode, hash_algo, proc, random_pass=enable_random, length=i, password=password, charset=charset)
+        hash = hash_password(password, hash_algo)
+        if tool == 0:
+          main(mode, hash, proc)
+        else:
+          result = hashcat.crack(hash, hashcat.hash_map[hash_algo])
+          print(result.stdout)
     else:
-      main(mode, hash_algo, proc, random_pass=enable_random, length=length, password=password, charset=charset)
+      hash = hash_password(password, hash_algo)
+      if tool == 0:
+        main(mode, hash, proc)
+      else:
+        result = hashcat.crack(hash, hashcat.hash_map[hash_algo])
+        print(result.stdout)
