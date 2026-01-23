@@ -219,11 +219,13 @@ if __name__ == '__main__':
   # Skicka in lösenord och kör brute force
   mode = int(input("Mode (Brute force <0>, Benchmark <1>: )"))
   enable_random = False
+  test_all_hashes = False
   length = None
   password = None
   iterate = False
   repeat = 1
   charset = ""
+  hash = None
   tool = int(input("Tool (python <0>, hashcat <1>): "))
   if mode == 0:
     enable_random = bool(int(input("Use random password? (0/1): ")))
@@ -250,6 +252,8 @@ if __name__ == '__main__':
     test_all_hashes = bool(int(input("Test all hashes? (0/1): ")))
     if not test_all_hashes:
       hash_algo = hash_types[int(input("Hash type (sha256 <0>, bcrypt <1>, md5 <2>): "))]
+    
+    hash = hash_password(password, hash_algo)
   else:
     hash_algo = hash_types[int(input("Hash type (sha256 <0>, bcrypt <1>, md5 <2>): "))]
 
@@ -274,13 +278,12 @@ if __name__ == '__main__':
           hashcat_main(hash, hashtype)
     elif iterate:
       for i in range(1, length + 1):
-        hash = hash_password(password, hash_algo)
+        print(hash_algo)
         if tool == 0:
           main(mode, hash, proc)
         else:
           hashcat_main(hash, hash_algo)
     else:
-      hash = hash_password(password, hash_algo)
       if tool == 0:
         main(mode, hash, proc)
       else:
