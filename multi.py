@@ -239,7 +239,6 @@ if __name__ == '__main__':
         charset += uppercase
       if input("Use lowercase? (0/1): ") == "1":
         charset += lowercase
-      password = generate_password(length, charset)
       iterate = bool(int(input("Iterate through length? (0/1): ")))
       repeat = int(input("Repeat? (0/1): "))
       if repeat == 1:
@@ -252,8 +251,6 @@ if __name__ == '__main__':
     test_all_hashes = bool(int(input("Test all hashes? (0/1): ")))
     if not test_all_hashes:
       hash_algo = hash_types[int(input("Hash type (sha256 <0>, bcrypt <1>, md5 <2>): "))]
-    
-    hash = hash_password(password, hash_algo)
   else:
     hash_algo = hash_types[int(input("Hash type (sha256 <0>, bcrypt <1>, md5 <2>): "))]
 
@@ -261,6 +258,9 @@ if __name__ == '__main__':
     proc = int(input("Amount of processes to be used: "))
 
   for j in range(repeat):
+    if mode == 0:
+      password = generate_password(length, charset)
+      hash = hash_password(password, hash_algo)
     if test_all_hashes and iterate:
       for hashtype in hash_types:
         for i in range(1, length + 1):
