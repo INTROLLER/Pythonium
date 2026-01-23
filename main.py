@@ -12,7 +12,6 @@ import hashcat
 chars = string.printable
 chars = chars.strip("\n")
 chars = chars.strip()
-chars = random.sample(chars, len(chars))
 
 lowercase = string.ascii_lowercase
 uppercase = string.ascii_uppercase
