@@ -129,7 +129,7 @@ def generate_password(length, charset):
 
   return password
 
-def main(mode, hash, proc):
+def main(mode, hash, proc, hash_algo):
   if mode == 0:
     print("Using " + str(proc) + " processes to brute force...")
 
@@ -260,31 +260,33 @@ if __name__ == '__main__':
   for j in range(repeat):
     if mode == 0:
       password = generate_password(length, charset)
+
+    if mode == 0 and not test_all_hashes:
       hash = hash_password(password, hash_algo)
     if test_all_hashes and iterate:
       for hashtype in hash_types:
         for i in range(1, length + 1):
           hash = hash_password(password, hashtype)
           if tool == 0:
-            main(mode, hash, proc)
+            main(mode, hash, proc, hashtype)
           else:
             hashcat_main(hash, hashtype)
     elif test_all_hashes:
       for hashtype in hash_types:
         hash = hash_password(password, hashtype)
         if tool == 0:
-          main(mode, hash, proc)
+          main(mode, hash, proc, hashtype)
         else:
           hashcat_main(hash, hashtype)
     elif iterate:
       for i in range(1, length + 1):
         print(hash_algo)
         if tool == 0:
-          main(mode, hash, proc)
+          main(mode, hash, proc, hash_algo)
         else:
           hashcat_main(hash, hash_algo)
     else:
       if tool == 0:
-        main(mode, hash, proc)
+        main(mode, hash, proc, hash_algo)
       else:
         hashcat_main(hash, hash_algo)
