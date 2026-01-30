@@ -19,7 +19,7 @@ def crack(hash, hashtype):
         "-m", hashtype,                  # hash type (MD5 example)
         "-a", "3",                  # attack mode (dictionary)
         hash,
-        "?a?a?a?a?a",
+        "?a?a?a?a?a?a",
         "--increment",
         "--potfile-disable",
         "--status",
