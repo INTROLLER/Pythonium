@@ -95,6 +95,6 @@ for h, c in hash_to_symbol.items():
     plt.scatter([], [], marker=c, label=h, color="black")
 plt.legend(title="Hashfunktion")
 
-plt.ylim(0, 60 * 60 * 2)
+plt.ylim(0, y_cap)
 plt.tight_layout()
 plt.show()
