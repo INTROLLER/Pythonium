@@ -223,7 +223,7 @@ def hashcat_main(hash, hash_algo):
 # Huvudprocess
 if __name__ == '__main__':
   # Skicka in lösenord och kör brute force
-  mode = int(input("Mode (Brute force <0>, Benchmark <1>, Fixed <2>: )"))
+  mode = int(input("Mode (Brute force <0>, Benchmark <1>, Fixed <2>): "))
   enable_random = False
   test_all_hashes = False
   length = None
@@ -260,8 +260,9 @@ if __name__ == '__main__':
   else:
     hash_algo = hash_types[int(input("Hash type (sha256 <0>, bcrypt <1>, md5 <2>): "))]
     if mode == 2:
+      floor = int(input("Min character count (1-6): "))
       roof = int(input("Max character count (1-6): "))
-      entropy = int(input("Select entropy (Numbers only <0>, All characters <1>)"))
+      entropy = int(input("Select entropy (Numbers only <0>, All characters <1>): "))
 
   if tool == 0:
     proc = int(input("Amount of processes to be used: "))
@@ -316,9 +317,9 @@ if __name__ == '__main__':
     passwords = open(filename, "r")
     lines = passwords.readlines()
 
-    for i in range(0, roof):
+    for i in range(floor, roof + 1):
       for j in range(10):
-        line = i * 10 + j
+        line = (i - 1) * 10 + j
         password = lines[line].strip()
         hash = hash_password(password, hash_algo)
         if tool == 0:
