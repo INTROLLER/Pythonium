@@ -25,6 +25,10 @@ tool_outline = {
     "hashcat": "red"
 }
 
+ext_coeff = float(input("Extrapolation coefficient: "))
+if ext_coeff < 1:
+    ext_coeff = 1
+
 def exp_model(x, a, b):
     return a * np.exp(b * x)
 
@@ -41,7 +45,7 @@ def regression(tool, data):
     params, cov = curve_fit(exp_model, x, y)
     a, b = params
 
-    x_fit = np.linspace(min(x), max(x), 200)
+    x_fit = np.linspace(min(x), max(x) * ext_coeff, 200)
     y_fit = exp_model(x_fit, a, b)
 
     return (x_fit, y_fit)
