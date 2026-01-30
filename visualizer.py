@@ -49,11 +49,11 @@ def fit_exp(tool, data):
     params, _ = curve_fit(exp_model, x, y)
     return params  # (a, b)
 
-def draw_exp(params, x_min, x_max, n=300):
+def draw_exp(params, x_min, x_max, tool, n=300):
     a, b = params
     x_draw = np.linspace(x_min, x_max, n)
     y_draw = exp_model(x_draw, a, b)
-    plt.plot(x_draw, y_draw)
+    plt.plot(x_draw, y_draw, color=tool_outline[tool])
 
 def red_green_color(weight, vmin=0.5, vmax=4.5):
     norm = mcolors.Normalize(vmin=vmin, vmax=vmax)
@@ -86,9 +86,9 @@ plt.title("Brute-force benchmark")
 
 # Linjer
 if python_params is not None:
-    draw_exp(python_params, 1, ext_cap)
+    draw_exp(python_params, 1, ext_cap, "python")
 if hashcat_params is not None:
-    draw_exp(hashcat_params, 1, ext_cap)
+    draw_exp(hashcat_params, 1, ext_cap, "hashcat")
 
 # Legend
 for h, c in hash_to_symbol.items():
