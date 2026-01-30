@@ -28,12 +28,13 @@ tool_outline = {
 def exp_model(x, a, b):
     return a * np.exp(b * x)
 
-def regression(tool):
+def regression(tool, data):
     x, y = [], []
+    print(data)
     for row in data:
-        if row[4] == tool:
-            x.append(row[2])
-            y.append(row[3])
+        if row[5] == tool:
+            x.append(row[3])
+            y.append(row[4])
 
     if len(x) == 0 or len(y) == 0:
         return None
@@ -67,8 +68,8 @@ for row in data:
         edgecolors=tool_outline[row[5]]
     )
 
-python_reg = regression("python")
-hashcat_reg = regression("hashcat")
+python_reg = regression("python", data)
+hashcat_reg = regression("hashcat", data)
 
 # Linjer
 if python_reg is not None:
