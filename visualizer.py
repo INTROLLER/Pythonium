@@ -26,6 +26,7 @@ tool_outline = {
 }
 
 ext_cap = float(input("Extrapolate up to: "))
+y_cap = float(input("Time cap (seconds): "))
 if ext_cap < 1:
     ext_cap = 1
 
@@ -89,11 +90,11 @@ if python_params is not None:
 if hashcat_params is not None:
     draw_exp(hashcat_params, 1, ext_cap)
 
-# Legend (manuell för tydlighet)
+# Legend
 for h, c in hash_to_symbol.items():
     plt.scatter([], [], marker=c, label=h, color="black")
 plt.legend(title="Hashfunktion")
 
-plt.ylim(0, 60 * 60 * 2)  # only show y from 0 to 10 seconds
+plt.ylim(0, 60 * 60 * 2)
 plt.tight_layout()
 plt.show()
