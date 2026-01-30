@@ -30,7 +30,6 @@ def exp_model(x, a, b):
 
 def regression(tool, data):
     x, y = [], []
-    print(data)
     for row in data:
         if row[5] == tool:
             x.append(row[3])
