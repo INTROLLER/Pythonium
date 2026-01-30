@@ -25,30 +25,34 @@ tool_outline = {
     "hashcat": "red"
 }
 
-ext_coeff = float(input("Extrapolation coefficient: "))
-if ext_coeff < 1:
-    ext_coeff = 1
+ext_cap = float(input("Extrapolate up to: "))
+if ext_cap < 1:
+    ext_cap = 1
 
 def exp_model(x, a, b):
     return a * np.exp(b * x)
 
-def regression(tool, data):
+def fit_exp(tool, data):
     x, y = [], []
     for row in data:
         if row[5] == tool:
             x.append(row[3])
             y.append(row[4])
-
+    
     if len(x) == 0 or len(y) == 0:
         return None
     
-    params, cov = curve_fit(exp_model, x, y)
+    x = np.array(x)
+    y = np.array(y)
+
+    params, _ = curve_fit(exp_model, x, y)
+    return params  # (a, b)
+
+def draw_exp(params, x_min, x_max, n=300):
     a, b = params
-
-    x_fit = np.linspace(min(x), max(x) * ext_coeff, 200)
-    y_fit = exp_model(x_fit, a, b)
-
-    return (x_fit, y_fit)
+    x_draw = np.linspace(x_min, x_max, n)
+    y_draw = exp_model(x_draw, a, b)
+    plt.plot(x_draw, y_draw)
 
 def red_green_color(weight, vmin=0.5, vmax=4.5):
     norm = mcolors.Normalize(vmin=vmin, vmax=vmax)
@@ -71,26 +75,25 @@ for row in data:
         edgecolors=tool_outline[row[5]]
     )
 
-python_reg = regression("python", data)
-hashcat_reg = regression("hashcat", data)
-
-# Linjer
-if python_reg is not None:
-    x_fit, y_fit = python_reg
-    plt.plot(x_fit, y_fit, color="black", label="python")
-if hashcat_reg is not None:
-    x_fit, y_fit = hashcat_reg
-    plt.plot(x_fit, y_fit, color="red", label="hashcat")
+python_params = fit_exp("python", data)
+hashcat_params = fit_exp("hashcat", data)
 
 # Axlar och skala
 plt.xlabel("Lösenordslängd")
 plt.ylabel("Tid till knäckning (sekunder)")
 plt.title("Brute-force benchmark")
 
+# Linjer
+if python_params is not None:
+    draw_exp(python_params, 1, ext_cap)
+if hashcat_params is not None:
+    draw_exp(hashcat_params, 1, ext_cap)
+
 # Legend (manuell för tydlighet)
 for h, c in hash_to_symbol.items():
     plt.scatter([], [], marker=c, label=h, color="black")
 plt.legend(title="Hashfunktion")
 
+plt.ylim(0, 60 * 60 * 2)  # only show y from 0 to 10 seconds
 plt.tight_layout()
 plt.show()
