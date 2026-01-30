@@ -1,6 +1,8 @@
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
 import pickle
+import numpy as np
+from scipy.optimize import curve_fit
 
 # Tabeller
 
@@ -23,6 +25,27 @@ tool_outline = {
     "hashcat": "red"
 }
 
+def exp_model(x, a, b):
+    return a * np.exp(b * x)
+
+def regression(tool):
+    x, y = [], []
+    for row in data:
+        if row[4] == tool:
+            x.append(row[2])
+            y.append(row[3])
+
+    if len(x) == 0 or len(y) == 0:
+        return None
+    
+    params, cov = curve_fit(exp_model, x, y)
+    a, b = params
+
+    x_fit = np.linspace(min(x), max(x), 200)
+    y_fit = exp_model(x_fit, a, b)
+
+    return (x_fit, y_fit)
+
 def red_green_color(weight, vmin=0.5, vmax=4.5):
     norm = mcolors.Normalize(vmin=vmin, vmax=vmax)
     cmap = plt.cm.RdYlGn_r  # red → yellow → green
@@ -43,6 +66,17 @@ for row in data:
         marker=hash_to_symbol[row[0]],
         edgecolors=tool_outline[row[4]]
     )
+
+python_reg = regression("python")
+hashcat_reg = regression("hashcat")
+
+# Linjer
+if python_reg is not None:
+    x_fit, y_fit = python_reg
+    plt.plot(x_fit, y_fit, color="black", label="python")
+if hashcat_reg is not None:
+    x_fit, y_fit = hashcat_reg
+    plt.plot(x_fit, y_fit, color="red", label="hashcat")
 
 # Axlar och skala
 plt.xlabel("Lösenordslängd")
