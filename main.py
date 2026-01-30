@@ -12,7 +12,7 @@ import hashcat
 chars = string.printable
 chars = chars.strip("\n")
 chars = chars.strip()
-chars = random.sample(chars, len(chars))
+# chars = random.sample(chars, len(chars))
 
 lowercase = string.ascii_lowercase
 uppercase = string.ascii_uppercase
@@ -22,6 +22,7 @@ special_characters = string.punctuation
 hash_types = ["sha256", "bcrypt", "md5"]
 hash_type = int()
 
+weights = [0.0, 4.5]
 
 def hash_password(password, algo):
   """Hashar lösenord som skickas in."""
@@ -95,7 +96,7 @@ def benchmark(str, hash_algo, qcounter):
         break
 
 
-def save_results(algo, charset, length, time, tool):
+def save_results(password, algo, charset, length, time, tool):
   data = []
   try:
     with open("benchmarks.pkl", "rb") as f:
@@ -103,7 +104,7 @@ def save_results(algo, charset, length, time, tool):
   except:
     pass
 
-  data.append((algo, charset, length, time, tool))
+  data.append((password, algo, charset, length, time, tool))
 
   with open("benchmarks.pkl", "wb") as f:
     pickle.dump(data, f)
@@ -130,7 +131,7 @@ def generate_password(length, charset):
   return password
 
 def main(mode, hash, proc, hash_algo):
-  if mode == 0:
+  if mode == 0 or mode == 2:
     print("Using " + str(proc) + " processes to brute force...")
 
     base = len(chars)
@@ -150,7 +151,7 @@ def main(mode, hash, proc, hash_algo):
       ranges = []
       for j in range(proc):
         first = chunk*j
-        if j == 7:
+        if j == proc - 1:
           last = total
         else:
           last = chunk*(j+1)
@@ -169,9 +170,12 @@ def main(mode, hash, proc, hash_algo):
           print("Found password: " + guess)
           print("Elapsed time: " + str(elapsed))
 
-          color_weight = get_color_weight(password)
+          if mode == 0:
+            color_weight = get_color_weight(password)
+          else:
+            color_weight = weights[entropy]
 
-          save_results(hash_algo, color_weight, len(password), elapsed, "python")
+          save_results(guess, hash_algo, color_weight, len(password), elapsed, "python")
 
           for p in processes:
             # Stäng ned allt
@@ -207,16 +211,19 @@ def main(mode, hash, proc, hash_algo):
 
 def hashcat_main(hash, hash_algo):
   result = hashcat.crack(hash, hashcat.hash_map[hash_algo])
-  print(result[0].stdout)
+  print(result)
   print("----")
-  print(result[1])
-  color_weight = get_color_weight(password)
-  save_results(hash_algo, color_weight, len(password), result[1], "hashcat")
+  # print(result[1])
+  if mode == 0:
+    color_weight = get_color_weight(password)
+  else:
+    color_weight = weights[entropy]
+  save_results(result[0], hash_algo, color_weight, len(password), result[1], "hashcat")
 
 # Huvudprocess
 if __name__ == '__main__':
   # Skicka in lösenord och kör brute force
-  mode = int(input("Mode (Brute force <0>, Benchmark <1>: )"))
+  mode = int(input("Mode (Brute force <0>, Benchmark <1>, Fixed <2>: )"))
   enable_random = False
   test_all_hashes = False
   length = None
@@ -252,48 +259,69 @@ if __name__ == '__main__':
       hash_algo = hash_types[int(input("Hash type (sha256 <0>, bcrypt <1>, md5 <2>): "))]
   else:
     hash_algo = hash_types[int(input("Hash type (sha256 <0>, bcrypt <1>, md5 <2>): "))]
+    if mode == 2:
+      roof = int(input("Max character count (1-6): "))
+      entropy = int(input("Select entropy (Numbers only <0>, All characters <1>)"))
 
   if tool == 0:
     proc = int(input("Amount of processes to be used: "))
 
-  for j in range(repeat):
-    if test_all_hashes and iterate:
-      for hashtype in hash_types:
-        for i in range(1, length + 1):
-          if mode == 0:
-            password = generate_password(i, charset)
+  if mode != 2:
+    for j in range(repeat):
+      if test_all_hashes and iterate:
+        for hashtype in hash_types:
+          for i in range(1, length + 1):
+            if mode == 0 and enable_random:
+              password = generate_password(i, charset)
             hash = hash_password(password, hashtype)
+
+            if tool == 0:
+              main(mode, hash, proc, hashtype)
+            else:
+              hashcat_main(hash, hashtype)
+      elif test_all_hashes:
+        for hashtype in hash_types:
+          if mode == 0 and enable_random:
+            password = generate_password(length, charset)
+          hash = hash_password(password, hashtype)
 
           if tool == 0:
             main(mode, hash, proc, hashtype)
           else:
             hashcat_main(hash, hashtype)
-    elif test_all_hashes:
-      for hashtype in hash_types:
-        if mode == 0:
-          password = generate_password(length, charset)
-          hash = hash_password(password, hashtype)
-
-        if tool == 0:
-          main(mode, hash, proc, hashtype)
-        else:
-          hashcat_main(hash, hashtype)
-    elif iterate:
-      for i in range(1, length + 1):
-        if mode == 0:
-          password = generate_password(i, charset)
+      elif iterate:
+        for i in range(1, length + 1):
+          if mode == 0 and enable_random:
+            password = generate_password(i, charset)
           hash = hash_password(password, hash_algo)
+
+          if tool == 0:
+            main(mode, hash, proc, hash_algo)
+          else:
+            hashcat_main(hash, hash_algo)
+      else:
+        if mode == 0 and enable_random:
+          password = generate_password(length, charset)
+        hash = hash_password(password, hash_algo)
 
         if tool == 0:
           main(mode, hash, proc, hash_algo)
         else:
           hashcat_main(hash, hash_algo)
-    else:
-      if mode == 0:
-        password = generate_password(length, charset)
-        hash = hash_password(password, hash_algo)
+  else:
+    if entropy == 0:
+      filename = "passwords/digits.txt"
+    elif entropy == 1:
+      filename = "passwords/special.txt"
+    passwords = open(filename, "r")
+    lines = passwords.readlines()
 
-      if tool == 0:
-        main(mode, hash, proc, hash_algo)
-      else:
-        hashcat_main(hash, hash_algo)
+    for i in range(0, roof):
+      for j in range(10):
+        line = i * 10 + j
+        password = lines[line].strip()
+        hash = hash_password(password, hash_algo)
+        if tool == 0:
+          main(mode, hash, 8, hash_algo)
+        else:
+          hashcat_main(hash, hash_algo)

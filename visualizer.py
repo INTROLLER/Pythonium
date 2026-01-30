@@ -36,12 +36,12 @@ plt.figure(figsize=(8, 5))
 
 for row in data:
     plt.scatter(
-        row[2],
         row[3],
-        color=red_green_color(weight=row[1]),
+        row[4],
+        color=red_green_color(weight=row[2]),
         alpha=0.7,
-        marker=hash_to_symbol[row[0]],
-        edgecolors=tool_outline[row[4]]
+        marker=hash_to_symbol[row[1]],
+        edgecolors=tool_outline[row[5]]
     )
 
 # Axlar och skala
