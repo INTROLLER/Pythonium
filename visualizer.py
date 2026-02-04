@@ -25,6 +25,7 @@ tool_outline = {
     "hashcat": "red"
 }
 
+filename = input("File to read from: ") + ".pkl"
 ext_cap = float(input("Extrapolate up to: "))
 y_cap = float(input("Time cap (seconds): "))
 if ext_cap < 1:
@@ -60,7 +61,7 @@ def red_green_color(weight, vmin=0.5, vmax=4.5):
     cmap = plt.cm.RdYlGn_r  # red → yellow → green
     return cmap(norm(weight))
 
-with open("benchmarks.pkl", "rb") as f:
+with open(filename, "rb") as f:
     data = pickle.load(f)
 
 # Skapa figur
@@ -82,7 +83,7 @@ hashcat_params = fit_exp("hashcat", data)
 # Axlar och skala
 plt.xlabel("Lösenordslängd")
 plt.ylabel("Tid till knäckning (sekunder)")
-plt.title("Brute-force benchmark")
+plt.title("Brute force-resultat från " + filename)
 
 # Linjer
 if python_params is not None:
