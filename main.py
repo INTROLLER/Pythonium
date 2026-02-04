@@ -97,17 +97,19 @@ def benchmark(str, hash_algo, qcounter):
 
 
 def save_results(password, algo, charset, length, time, tool):
-  data = []
-  try:
-    with open(picklename, "rb") as f:
-      data = pickle.load(f)
-  except:
-    pass
+  files = ["all.pkl", picklename]
+  for file in files:
+    data = []
+    try:
+      with open(file, "rb") as f:
+        data = pickle.load(f)
+    except:
+      pass
 
-  data.append((password, algo, charset, length, time, tool))
+    data.append((password, algo, charset, length, time, tool))
 
-  with open(picklename, "wb") as f:
-    pickle.dump(data, f)
+    with open(file, "wb") as f:
+      pickle.dump(data, f)
 
 def get_color_weight(password):
   color_weight = 0.0
@@ -268,7 +270,7 @@ if __name__ == '__main__':
     proc = int(input("Amount of processes to be used: "))
 
   if tool != 1:
-    picklename = input("File to write to: ") + ".pkl"
+    picklename = input("Separate file to write to: ") + ".pkl"
 
   if mode != 2:
     for j in range(repeat):
