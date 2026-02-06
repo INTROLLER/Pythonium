@@ -65,7 +65,7 @@ def red_green_color(weight, vmin=0.5, vmax=4.5):
     cmap = plt.cm.RdYlGn_r  # red → yellow → green
     return cmap(norm(weight))
 
-with open("results/" + filename, "rb") as f:
+with open(filename, "rb") as f:
     data = pickle.load(f)
 
 # Skapa figur
