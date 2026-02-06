@@ -1,9 +1,9 @@
 import pickle
 from itertools import groupby
 
-filename = input("File name: ") + ".pkl"
+filename = "results/" + input("File name: ") + ".pkl"
 
-with open("results/" + filename, "rb") as f:
+with open(filename, "rb") as f:
     data = pickle.load(f)
 
 g = open("results.txt", "w")
