@@ -6,6 +6,8 @@ from scipy.optimize import curve_fit
 
 # Tabeller
 
+hash_list = ["md5", "sha256", "bcrypt"]
+
 hash_to_symbol = {
   "md5": "o",
   "sha256": "s",
@@ -27,6 +29,8 @@ tool_outline = {
 
 filename = input("File to read from: ") + ".pkl"
 ext_cap = float(input("Extrapolate up to: "))
+tool_includes = (int(input("Include python? (<0> no, <1> yes): ")), int(input("Include hashcat? (<0> no, <1> yes): ")))
+hash_func_incl = (int(input("Include md5? (<0> no, <1> yes): ")), int(input("Include sha256? (<0> no, <1> yes): ")), int(input("Include bcrypt? (<0> no, <1> yes): ")))
 y_cap = float(input("Time cap (seconds): "))
 if ext_cap < 1:
     ext_cap = 1
@@ -68,6 +72,24 @@ with open("results" + filename, "rb") as f:
 plt.figure(figsize=(8, 5))
 
 for row in data:
+    if row[5] == "python" and tool_includes[0] == 0:
+        continue
+
+    if row[5] == "hashcat" and tool_includes[1] == 0:
+        continue
+
+    if row[3] > ext_cap:
+        ext_cap = row[3]
+
+    if row[1] == "md5" and hash_func_incl[0] == 0:
+        continue
+
+    if row[1] == "sha256" and hash_func_incl[1] == 0:
+        continue
+
+    if row[1] == "bcrypt" and hash_func_incl[2] == 0:
+        continue
+
     plt.scatter(
         row[3],
         row[4],
@@ -86,14 +108,15 @@ plt.ylabel("Tid till knäckning (sekunder)")
 plt.title("Brute force-resultat från " + filename)
 
 # Linjer
-if python_params is not None:
+if python_params is not None and tool_includes[0] == 1:
     draw_exp(python_params, 1, ext_cap, "python")
-if hashcat_params is not None:
+if hashcat_params is not None and tool_includes[1] == 1:
     draw_exp(hashcat_params, 1, ext_cap, "hashcat")
 
 # Legend
 for h, c in hash_to_symbol.items():
-    plt.scatter([], [], marker=c, label=h, color="black")
+    if hash_func_incl[hash_list.index(h)] == 1:
+        plt.scatter([], [], marker=c, label=h, color="black")
 plt.legend(title="Hashfunktion")
 
 plt.ylim(0, y_cap)
