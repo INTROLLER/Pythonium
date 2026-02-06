@@ -27,7 +27,7 @@ tool_outline = {
     "hashcat": "red"
 }
 
-filename = input("File to read from: ") + ".pkl"
+filename = "results/" + input("File to read from: ") + ".pkl"
 ext_cap = float(input("Extrapolate up to: "))
 tool_includes = (int(input("Include python? (<0> no, <1> yes): ")), int(input("Include hashcat? (<0> no, <1> yes): ")))
 hash_func_incl = (int(input("Include md5? (<0> no, <1> yes): ")), int(input("Include sha256? (<0> no, <1> yes): ")), int(input("Include bcrypt? (<0> no, <1> yes): ")))
