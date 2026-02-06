@@ -6,4 +6,5 @@ with open(filename, "rb") as f:
   data = pickle.load(f)
 
 with open("results/all.pkl", "wb") as f:
+  data.extend(pickle.load(f))
   pickle.dump(data, f)
