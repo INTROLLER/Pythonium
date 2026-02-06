@@ -269,7 +269,7 @@ if __name__ == '__main__':
   if tool == 0:
     proc = int(input("Amount of processes to be used: "))
 
-  if tool != 1:
+  if mode != 1:
     picklename = input("Separate file to write to: ") + ".pkl"
 
   if mode != 2:
