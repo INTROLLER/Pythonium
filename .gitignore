@@ -3,3 +3,4 @@ hashcat-7.1.2/
 __pycache__/
 *.pkl
 !all.pkl
+*.txt
