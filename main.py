@@ -215,7 +215,6 @@ def hashcat_main(hash, hash_algo):
   result = hashcat.crack(hash, hashcat.hash_map[hash_algo])
   print(result)
   print("----")
-  # print(result[1])
   if mode == 0:
     color_weight = get_color_weight(password)
   else:

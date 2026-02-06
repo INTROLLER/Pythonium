@@ -5,8 +5,11 @@ filename = "results/" + input("File name: ") + ".pkl"
 with open(filename, "rb") as f:
   data = pickle.load(f)
 
-with open("results/all.pkl", "rb") as f:
-  data.extend(pickle.load(f))
+try:
+  with open("results/all.pkl", "rb") as f:
+    data.extend(pickle.load(f))
+except:
+  pass
 
 with open("results/all.pkl", "wb") as f:
   pickle.dump(data, f)
