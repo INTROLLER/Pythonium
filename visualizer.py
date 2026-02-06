@@ -35,6 +35,9 @@ y_cap = float(input("Time cap (seconds): "))
 if ext_cap < 1:
     ext_cap = 1
 
+tool_counter = [0, 0]
+hash_func_counter = [0, 0, 0]
+
 def exp_model(x, a, b):
     return a * np.exp(b * x)
 
@@ -72,23 +75,33 @@ with open(filename, "rb") as f:
 plt.figure(figsize=(8, 5))
 
 for row in data:
-    if row[5] == "python" and tool_includes[0] == 0:
-        continue
+    if row[5] == "python":
+        tool_counter[0] += 1
+        if tool_includes[0] == 0:
+            continue
 
-    if row[5] == "hashcat" and tool_includes[1] == 0:
-        continue
+    if row[5] == "hashcat":
+        tool_counter[1] += 1
+        if tool_includes[1] == 0:
+            continue
 
     if row[3] > ext_cap:
         ext_cap = row[3]
 
-    if row[1] == "md5" and hash_func_incl[0] == 0:
-        continue
+    if row[1] == "md5":
+        hash_func_counter[0] += 1
+        if hash_func_incl[0] == 0:
+            continue
 
-    if row[1] == "sha256" and hash_func_incl[1] == 0:
-        continue
+    if row[1] == "sha256":
+        hash_func_counter[1] += 1
+        if hash_func_incl[1] == 0:
+            continue
 
-    if row[1] == "bcrypt" and hash_func_incl[2] == 0:
-        continue
+    if row[1] == "bcrypt":
+        hash_func_counter[2] += 1
+        if hash_func_incl[2] == 0:
+            continue
 
     plt.scatter(
         row[3],
@@ -115,7 +128,7 @@ if hashcat_params is not None and tool_includes[1] == 1:
 
 # Legend
 for h, c in hash_to_symbol.items():
-    if hash_func_incl[hash_list.index(h)] == 1:
+    if hash_func_counter[hash_list.index(h)] > 0:
         plt.scatter([], [], marker=c, label=h, color="black")
 plt.legend(title="Hashfunktion")
 
