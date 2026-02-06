@@ -101,14 +101,14 @@ def save_results(password, algo, charset, length, time, tool):
   for file in files:
     data = []
     try:
-      with open(file, "rb") as f:
+      with open("results/" + file, "rb") as f:
         data = pickle.load(f)
     except:
       pass
 
     data.append((password, algo, charset, length, time, tool))
 
-    with open(file, "wb") as f:
+    with open("results/" + file, "wb") as f:
       pickle.dump(data, f)
 
 def get_color_weight(password):
@@ -269,7 +269,7 @@ if __name__ == '__main__':
   if tool == 0:
     proc = int(input("Amount of processes to be used: "))
 
-  if tool != 1:
+  if mode != 1:
     picklename = input("Separate file to write to: ") + ".pkl"
 
   if mode != 2:
