@@ -17,7 +17,7 @@ def crack(hash, hashtype):
     cmd = [
         HASHCAT_EXE,
         "-m", hashtype,                  # hash type (MD5 example)
-        "-a", "3",                  # attack mode (dictionary)
+        "-a", "3",                  # attack mode
         hash,
         "?a?a?a?a?a?a",
         "--increment",
@@ -39,7 +39,9 @@ def crack(hash, hashtype):
     elapsed = time_end - time_start
 
     # Extract PROGRESS (current and total)
-    m = re.search(rf"{re.escape(hash)}:(.+)", result.stdout)
+    clean = result.stdout.strip()
+    clean = re.sub(r"\s+", " ", clean)
+    m = re.search(rf"{re.escape(hash)}:(\S+)", clean)
     if m:
         print("Fully cracked! Time elapsed:", elapsed)
         password = m.group(1)
