@@ -112,6 +112,12 @@ for row in data:
         edgecolors=tool_outline[row[5]]
     )
 
+data_bcrypt = [row for row in data if row[1] == "bcrypt"]
+data_sha256 = [row for row in data if row[1] == "sha256"]
+data_md5 = [row for row in data if row[1] == "md5"]
+
+data_batches = [data_md5, data_sha256, data_bcrypt]
+
 python_params = fit_exp("python", data)
 hashcat_params = fit_exp("hashcat", data)
 
@@ -121,10 +127,16 @@ plt.ylabel("Tid till knäckning (sekunder)")
 plt.title("Brute force-resultat från " + filename)
 
 # Linjer
-if python_params is not None and tool_includes[0] == 1:
-    draw_exp(python_params, 1, ext_cap, "python")
-if hashcat_params is not None and tool_includes[1] == 1:
-    draw_exp(hashcat_params, 1, ext_cap, "hashcat")
+for batch in data_batches:
+    if len(batch) == 0 or tool_includes[hash_list.index(batch[0][1])] == 0:
+        continue
+
+    python_params = fit_exp("python", batch)
+    hashcat_params = fit_exp("hashcat", batch)
+    if python_params is not None and tool_includes[0] == 1:
+        draw_exp(python_params, 1, ext_cap, "python")
+    if hashcat_params is not None and tool_includes[1] == 1:
+        draw_exp(hashcat_params, 1, ext_cap, "hashcat")
 
 # Legend
 for h, c in hash_to_symbol.items():
