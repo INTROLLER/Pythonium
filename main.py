@@ -170,7 +170,8 @@ def main(mode, hash, proc, hash_algo):
           time_end = time.monotonic()
           elapsed = time_end - time_start
           print("Found password: " + guess)
-          print("Elapsed time: " + str(elapsed))
+          print("Elapsed time: " + format_time(elapsed))
+          print("----")
 
           if mode == 0:
             color_weight = get_color_weight(password)
@@ -211,9 +212,19 @@ def main(mode, hash, proc, hash_algo):
     efficiency = total / 10
     print("Estimated pure hashing efficiency: " + str(efficiency) + " H/s")
 
+def format_time(time):
+  if time > 60 and time > (60 * 60) and time > (60 * 60 * 24):
+    return str(round(time / (60 * 60 * 24), 2)) + "d"
+  elif time > 60 and time > (60 * 60):
+    return str(round(time / (60 * 60), 2)) + "h"
+  elif time > 60:
+    return str(round(time / 60, 2)) + "m"
+  else:
+    return str(round(time, 2)) + "s"
+
 def hashcat_main(hash, hash_algo):
   result = hashcat.crack(hash, hashcat.hash_map[hash_algo])
-  print(result)
+  print(result[0], format_time(result[1]))
   print("----")
   if mode == 0:
     color_weight = get_color_weight(password)
