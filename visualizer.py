@@ -128,7 +128,7 @@ plt.title("Brute force-resultat från " + filename)
 
 # Linjer
 for batch in data_batches:
-    if len(batch) == 0 or tool_includes[hash_list.index(batch[0][1])] == 0:
+    if len(batch) == 0 or hash_func_incl[hash_list.index(batch[0][1])] == 0:
         continue
 
     python_params = fit_exp("python", batch)
