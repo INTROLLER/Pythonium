@@ -74,6 +74,15 @@ def red_green_color(weight, vmin=0.5, vmax=4.5):
     cmap = plt.cm.RdYlGn_r  # red → yellow → green
     return cmap(norm(weight))
 
+def readable_function(params, tool, hash_name):
+    a, b = params
+    k = np.exp(b)
+
+    print(f"{tool} — {hash_name}:")
+    print(f"  f(x) = {a:.6g} * e^({b:.6g} x)")
+    print(f"       = {a:.6g} * {k:.6g}^x")
+    print()
+
 with open(filename, "rb") as f:
     data = pickle.load(f)
 
@@ -147,8 +156,10 @@ for batch in data_batches:
     hashcat_params = fit_exp("hashcat", batch)
     if python_params is not None and tool_includes[0] == 1:
         draw_exp(python_params, 1, ext_cap, "python")
+        readable_function(python_params, "python", batch[0][1])
     if hashcat_params is not None and tool_includes[1] == 1:
         draw_exp(hashcat_params, 1, ext_cap, "hashcat")
+        readable_function(hashcat_params, "hashcat", batch[0][1])
 
 # Legend
 for h, c in hash_to_symbol.items():
