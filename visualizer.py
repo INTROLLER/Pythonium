@@ -149,17 +149,32 @@ plt.title("Brute force-resultat från " + filename)
 
 # Linjer
 for batch in data_batches:
+    low_entoropy = []
+    high_entoropy = []
+
     if len(batch) == 0 or hash_func_incl[hash_list.index(batch[0][1])] == 0:
         continue
 
-    python_params = fit_exp("python", batch)
-    hashcat_params = fit_exp("hashcat", batch)
-    if python_params is not None and tool_includes[0] == 1:
-        draw_exp(python_params, 1, ext_cap, "python")
-        readable_function(python_params, "python", batch[0][1])
-    if hashcat_params is not None and tool_includes[1] == 1:
-        draw_exp(hashcat_params, 1, ext_cap, "hashcat")
-        readable_function(hashcat_params, "hashcat", batch[0][1])
+    for row in batch:
+        if row[2] == 0:
+            low_entoropy.append(row)
+        if row[2] == 4.5:
+            high_entoropy.append(row)
+
+    entropy_groups = [low_entoropy, high_entoropy]
+    for group in entropy_groups:
+        if len(group) == 0:
+            continue
+
+        python_params = fit_exp("python", group)
+        hashcat_params = fit_exp("hashcat", group)
+
+        if python_params is not None and tool_includes[0] == 1:
+            draw_exp(python_params, 1, ext_cap, "python")
+            readable_function(python_params, "python", batch[0][1])
+        if hashcat_params is not None and tool_includes[1] == 1:
+            draw_exp(hashcat_params, 1, ext_cap, "hashcat")
+            readable_function(hashcat_params, "hashcat", batch[0][1])
 
 # Legend
 for h, c in hash_to_symbol.items():
