@@ -81,8 +81,8 @@ def benchmark(str, hash_algo, qcounter):
   """Ren benchmark för hashningshastighet, ger teoretisk maxhastighet."""
   count = 0
   time_start = time.monotonic()
-  if hash_algo == 1:
-    iterations = 10
+  if hash_algo == "bcrypt":
+    iterations = 100
   else:
     iterations = 10000
 
@@ -190,27 +190,32 @@ def main(mode, hash, proc, hash_algo):
 
         time.sleep(0.01)
   else:
-    print("Benchmarking using " + str(proc) + " processes...")
-    bstring = "AAAAA"
-    processes = []
-    qcounter = multiprocessing.Queue()
-    total = 0
+    measured = []
+    for i in range(10):
+      print("Benchmarking using " + str(proc) + " processes...")
+      bstring = "AAAAA"
+      processes = []
+      qcounter = multiprocessing.Queue()
+      total = 0
 
-    for i in range(proc):
-      p = multiprocessing.Process(target=benchmark, args=(bstring, hash_algo, qcounter))
-      p.start()
-      processes.append(p)
+      for i in range(proc):
+        p = multiprocessing.Process(target=benchmark, args=(bstring, hash_algo, qcounter))
+        p.start()
+        processes.append(p)
 
-    time.sleep(11)
+      time.sleep(11)
 
-    for p in processes:
-      p.terminate()
+      for p in processes:
+        p.terminate()
 
-    while not qcounter.empty():
-      total += qcounter.get()
+      while not qcounter.empty():
+        total += qcounter.get()
 
-    efficiency = total / 10
-    print("Estimated pure hashing efficiency: " + str(efficiency) + " H/s")
+      efficiency = total / 10
+      measured.append(efficiency)
+
+    efficiency_sum = sum(measured) / 10
+    print("Estimated pure hashing efficiency: " + str(efficiency_sum) + " H/s")
 
 def format_time(time):
   if time > 60 and time > (60 * 60) and time > (60 * 60 * 24):
@@ -287,9 +292,10 @@ if __name__ == '__main__':
       if test_all_hashes and iterate:
         for hashtype in hash_types:
           for i in range(1, length + 1):
-            if mode == 0 and enable_random:
-              password = generate_password(i, charset)
-            hash = hash_password(password, hashtype)
+            if mode == 0:
+              if enable_random:
+                password = generate_password(i, charset)
+              hash = hash_password(password, hashtype)
 
             if tool == 0:
               main(mode, hash, proc, hashtype)
@@ -297,9 +303,10 @@ if __name__ == '__main__':
               hashcat_main(hash, hashtype)
       elif test_all_hashes:
         for hashtype in hash_types:
-          if mode == 0 and enable_random:
-            password = generate_password(length, charset)
-          hash = hash_password(password, hashtype)
+          if mode == 0:
+            if enable_random:
+              password = generate_password(length, charset)
+            hash = hash_password(password, hashtype)
 
           if tool == 0:
             main(mode, hash, proc, hashtype)
@@ -307,18 +314,20 @@ if __name__ == '__main__':
             hashcat_main(hash, hashtype)
       elif iterate:
         for i in range(1, length + 1):
-          if mode == 0 and enable_random:
-            password = generate_password(i, charset)
-          hash = hash_password(password, hash_algo)
+          if mode == 0:
+            if enable_random:
+              password = generate_password(i, charset)
+            hash = hash_password(password, hash_algo)
 
           if tool == 0:
             main(mode, hash, proc, hash_algo)
           else:
             hashcat_main(hash, hash_algo)
       else:
-        if mode == 0 and enable_random:
-          password = generate_password(length, charset)
-        hash = hash_password(password, hash_algo)
+        if mode == 0:
+          if enable_random:
+            password = generate_password(length, charset)
+          hash = hash_password(password, hash_algo)
 
         if tool == 0:
           main(mode, hash, proc, hash_algo)
