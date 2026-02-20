@@ -46,3 +46,30 @@ def crack(hash, hashtype):
         return password, elapsed
 
     return None, None
+
+def benchmark(hashtype):
+    if out_file.exists():
+        out_file.unlink()
+
+    cmd = [
+        HASHCAT_EXE,
+        "-m", hashtype,                  # hash type (MD5 example)
+        "-b",
+        "-o", str(out_file),
+        "--quiet"
+    ]
+
+    result = subprocess.run(
+        cmd,
+        cwd=HASHCAT_DIR,
+        capture_output=True,
+        text=True
+    )
+
+    for line in result.stdout.splitlines():
+        match = re.search(r"([\d\.]+)\s*([kMGT]?H/s)", line)
+        if match:
+            value = float(match.group(1))
+            unit = match.group(2)
+            return value, unit
+    return None

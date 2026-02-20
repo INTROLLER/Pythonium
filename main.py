@@ -228,14 +228,24 @@ def format_time(time):
     return str(round(time, 2)) + "s"
 
 def hashcat_main(hash, hash_algo):
-  result = hashcat.crack(hash, hashcat.hash_map[hash_algo])
-  print(result[0], format_time(result[1]))
-  print("----")
-  if mode == 0:
-    color_weight = get_color_weight(password)
+  if mode == 0 or mode == 2:
+    result = hashcat.crack(hash, hashcat.hash_map[hash_algo])
+    print(result[0], format_time(result[1]))
+    print("----")
+    if mode == 0:
+      color_weight = get_color_weight(password)
+    else:
+      color_weight = weights[entropy]
+    save_results(result[0], hash_algo, color_weight, len(password), result[1], "hashcat")
   else:
-    color_weight = weights[entropy]
-  save_results(result[0], hash_algo, color_weight, len(password), result[1], "hashcat")
+    list = []
+    for i in range(10):
+      result = hashcat.benchmark(hashcat.hash_map[hash_algo])
+      list.append(result[0])
+      print("Test " + str(i + 1) + ":")
+      print(str(result[0]) + " " + str(result[1]))
+      print("----")
+    print("Average: " + str(sum(list) / 10))
 
 # Huvudprocess
 if __name__ == '__main__':
