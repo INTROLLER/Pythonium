@@ -74,6 +74,15 @@ def red_green_color(weight, vmin=0.5, vmax=4.5):
     cmap = plt.cm.RdYlGn_r  # red → yellow → green
     return cmap(norm(weight))
 
+def readable_function(params, tool, hash_name, entropy):
+    a, b = params
+    k = np.exp(b)
+
+    print(f"{tool} — {hash_name} (Entropy: {entropy}):")
+    print(f"  f(x) = {a:.6g} * e^({b:.6g} x)")
+    print(f"       = {a:.6g} * {k:.6g}^x")
+    print()
+
 with open(filename, "rb") as f:
     data = pickle.load(f)
 
@@ -140,15 +149,32 @@ plt.title("Brute force-resultat från " + filename)
 
 # Linjer
 for batch in data_batches:
+    low_entoropy = []
+    high_entoropy = []
+
     if len(batch) == 0 or hash_func_incl[hash_list.index(batch[0][1])] == 0:
         continue
 
-    python_params = fit_exp("python", batch)
-    hashcat_params = fit_exp("hashcat", batch)
-    if python_params is not None and tool_includes[0] == 1:
-        draw_exp(python_params, 1, ext_cap, "python")
-    if hashcat_params is not None and tool_includes[1] == 1:
-        draw_exp(hashcat_params, 1, ext_cap, "hashcat")
+    for row in batch:
+        if row[2] == 0:
+            low_entoropy.append(row)
+        if row[2] == 4.5:
+            high_entoropy.append(row)
+
+    entropy_groups = [low_entoropy, high_entoropy]
+    for group in entropy_groups:
+        if len(group) == 0:
+            continue
+
+        python_params = fit_exp("python", group)
+        hashcat_params = fit_exp("hashcat", group)
+
+        if python_params is not None and tool_includes[0] == 1:
+            draw_exp(python_params, 1, ext_cap, "python")
+            readable_function(python_params, "python", batch[0][1], group[0][2])
+        if hashcat_params is not None and tool_includes[1] == 1:
+            draw_exp(hashcat_params, 1, ext_cap, "hashcat")
+            readable_function(hashcat_params, "hashcat", batch[0][1], group[0][2])
 
 # Legend
 for h, c in hash_to_symbol.items():
