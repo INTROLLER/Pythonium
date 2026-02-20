@@ -81,8 +81,8 @@ def benchmark(str, hash_algo, qcounter):
   """Ren benchmark för hashningshastighet, ger teoretisk maxhastighet."""
   count = 0
   time_start = time.monotonic()
-  if hash_algo == 1:
-    iterations = 10
+  if hash_algo == "bcrypt":
+    iterations = 100
   else:
     iterations = 10000
 
