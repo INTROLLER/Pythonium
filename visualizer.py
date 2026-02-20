@@ -32,8 +32,12 @@ ext_cap = float(input("Extrapolate up to: "))
 tool_includes = (int(input("Include python? (<0> no, <1> yes): ")), int(input("Include hashcat? (<0> no, <1> yes): ")))
 hash_func_incl = (int(input("Include md5? (<0> no, <1> yes): ")), int(input("Include sha256? (<0> no, <1> yes): ")), int(input("Include bcrypt? (<0> no, <1> yes): ")))
 auto_y_cap = int(input("Auto time cap? (<0> no, <1> yes): "))
+
 if auto_y_cap != 1:
     y_cap = float(input("Time cap (seconds): "))
+else:
+    y_cap = 0
+
 if ext_cap < 1:
     ext_cap = 1
 
