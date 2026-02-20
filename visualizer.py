@@ -31,7 +31,9 @@ filename = "results/" + input("File to read from: ") + ".pkl"
 ext_cap = float(input("Extrapolate up to: "))
 tool_includes = (int(input("Include python? (<0> no, <1> yes): ")), int(input("Include hashcat? (<0> no, <1> yes): ")))
 hash_func_incl = (int(input("Include md5? (<0> no, <1> yes): ")), int(input("Include sha256? (<0> no, <1> yes): ")), int(input("Include bcrypt? (<0> no, <1> yes): ")))
-y_cap = float(input("Time cap (seconds): "))
+auto_y_cap = int(input("Auto time cap? (<0> no, <1> yes): "))
+if auto_y_cap != 1:
+    y_cap = float(input("Time cap (seconds): "))
 if ext_cap < 1:
     ext_cap = 1
 
@@ -85,6 +87,9 @@ for row in data:
         if tool_includes[1] == 0:
             continue
 
+    if auto_y_cap == 1 and row[4] > y_cap:
+        y_cap = row[4]
+
     if row[3] > ext_cap:
         ext_cap = row[3]
 
@@ -111,6 +116,9 @@ for row in data:
         marker=hash_to_symbol[row[1]],
         edgecolors=tool_outline[row[5]]
     )
+
+if auto_y_cap == 1:
+    y_cap *= 1.1
 
 data_bcrypt = [row for row in data if row[1] == "bcrypt"]
 data_sha256 = [row for row in data if row[1] == "sha256"]
