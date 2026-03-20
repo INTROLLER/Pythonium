@@ -29,8 +29,13 @@ tool_outline = {
 
 filename = "results/" + input("File to read from: ") + ".pkl"
 ext_cap = float(input("Extrapolate up to: "))
-tool_includes = (int(input("Include python? (<0> no, <1> yes): ")), int(input("Include hashcat? (<0> no, <1> yes): ")))
-hash_func_incl = (int(input("Include md5? (<0> no, <1> yes): ")), int(input("Include sha256? (<0> no, <1> yes): ")), int(input("Include bcrypt? (<0> no, <1> yes): ")))
+tool_includes = (
+    int(input("Include python? (<0> no, <1> yes): ")),
+    int(input("Include hashcat? (<0> no, <1> yes): ")))
+hash_func_incl = (
+    int(input("Include md5? (<0> no, <1> yes): ")),
+    int(input("Include sha256? (<0> no, <1> yes): ")),
+    int(input("Include bcrypt? (<0> no, <1> yes): ")))
 auto_y_cap = int(input("Auto time cap? (<0> no, <1> yes): "))
 
 if auto_y_cap != 1:
@@ -44,8 +49,10 @@ if ext_cap < 1:
 tool_counter = [0, 0]
 hash_func_counter = [0, 0, 0]
 
+
 def exp_model(x, a, b):
     return a * np.exp(b * x)
+
 
 def fit_exp(tool, data):
     x, y = [], []
@@ -53,15 +60,16 @@ def fit_exp(tool, data):
         if row[5] == tool:
             x.append(row[3])
             y.append(row[4])
-    
+
     if len(x) == 0 or len(y) == 0:
         return None
-    
+
     x = np.array(x)
     y = np.array(y)
 
     params, _ = curve_fit(exp_model, x, y)
     return params  # (a, b)
+
 
 def draw_exp(params, x_min, x_max, tool, n=300):
     a, b = params
@@ -69,10 +77,12 @@ def draw_exp(params, x_min, x_max, tool, n=300):
     y_draw = exp_model(x_draw, a, b)
     plt.plot(x_draw, y_draw, color=tool_outline[tool])
 
+
 def red_green_color(weight, vmin=0.5, vmax=4.5):
     norm = mcolors.Normalize(vmin=vmin, vmax=vmax)
     cmap = plt.cm.RdYlGn_r  # red → yellow → green
     return cmap(norm(weight))
+
 
 def readable_function(params, tool, hash_name, entropy):
     a, b = params
@@ -171,10 +181,20 @@ for batch in data_batches:
 
         if python_params is not None and tool_includes[0] == 1:
             draw_exp(python_params, 1, ext_cap, "python")
-            readable_function(python_params, "python", batch[0][1], group[0][2])
+            readable_function(
+                python_params,
+                "python",
+                batch[0][1],
+                group[0][2]
+            )
         if hashcat_params is not None and tool_includes[1] == 1:
             draw_exp(hashcat_params, 1, ext_cap, "hashcat")
-            readable_function(hashcat_params, "hashcat", batch[0][1], group[0][2])
+            readable_function(
+                hashcat_params,
+                "hashcat",
+                batch[0][1],
+                group[0][2]
+            )
 
 # Legend
 for h, c in hash_to_symbol.items():
