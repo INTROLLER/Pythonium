@@ -24,339 +24,373 @@ hash_type = int()
 
 weights = [0.0, 4.5]
 
-def hash_password(password, algo):
-  """Hashar lösenord som skickas in."""
-  if algo == "sha256":
-    hashed_password = sha256(password.encode('utf-8')).hexdigest()
-  elif algo == "bcrypt":
-    hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt(rounds=4))
-  elif algo == "md5":
-    hashed_password = md5(password.encode('utf-8')).hexdigest()
 
-  return hashed_password
+def hash_password(password, algo):
+    """Hashar lösenord som skickas in."""
+    if algo == "sha256":
+        hashed_password = sha256(password.encode('utf-8')).hexdigest()
+    elif algo == "bcrypt":
+        hashed_password = bcrypt.hashpw(
+            password.encode('utf-8'),
+            bcrypt.gensalt(rounds=4)
+        )
+    elif algo == "md5":
+        hashed_password = md5(password.encode('utf-8')).hexdigest()
+
+    return hashed_password
 
 
 def index_to_password(index, length, chars, vals):
-  """Omvandlar tal till lösenordskombinationer."""
-  passwd = []
-  for i in reversed(range(length)):
-    val = vals[i]
-    passwd.append(chars[index // val])
-    index = index % val
+    """Omvandlar tal till lösenordskombinationer."""
+    passwd = []
+    for i in reversed(range(length)):
+        val = vals[i]
+        passwd.append(chars[index // val])
+        index = index % val
 
-  return "".join(passwd)
+    return "".join(passwd)
 
 
 def brute_force(hash, chars, indexes, len, hash_algo, efound, qresult):
-  """
-  Utför simulation av ren brute force-attack i intervallet indexes.
+    """
+    Utför simulation av ren brute force-attack i intervallet indexes.
 
-  Använder efound och qresult för att synka med huvudprocess.
-  """
-  vals = []
-  for i in range(10):
-    vals.append(94 ** i)
+    Använder efound och qresult för att synka med huvudprocess.
+    """
+    vals = []
+    for i in range(10):
+        vals.append(94 ** i)
 
-  for i in range(indexes[0], indexes[1]):
-    if i % 100 == 0:
-      if efound.is_set():
-        return
+    for i in range(indexes[0], indexes[1]):
+        if i % 100 == 0:
+            if efound.is_set():
+                return
 
-    candidate = index_to_password(i, len, chars, vals)
+        candidate = index_to_password(i, len, chars, vals)
 
-    if hash_algo == "bcrypt":
-      if bcrypt.checkpw(candidate.encode(), hash):
-        qresult.put(candidate)
-        efound.set()
-        return
-    else:
-      hashed = hash_password(candidate, hash_algo)
-      if hashed == hash:
-        qresult.put(candidate)
-        efound.set()
-        return
+        if hash_algo == "bcrypt":
+            if bcrypt.checkpw(candidate.encode(), hash):
+                qresult.put(candidate)
+                efound.set()
+                return
+        else:
+            hashed = hash_password(candidate, hash_algo)
+            if hashed == hash:
+                qresult.put(candidate)
+                efound.set()
+                return
 
 
 def benchmark(str, hash_algo, qcounter):
-  """Ren benchmark för hashningshastighet, ger teoretisk maxhastighet."""
-  count = 0
-  time_start = time.monotonic()
-  if hash_algo == "bcrypt":
-    iterations = 100
-  else:
-    iterations = 10000
+    """Ren benchmark för hashningshastighet, ger teoretisk maxhastighet."""
+    count = 0
+    time_start = time.monotonic()
+    if hash_algo == "bcrypt":
+        iterations = 100
+    else:
+        iterations = 10000
 
-  while True:
-    hash_password(str, hash_algo)
-    count += 1
+    while True:
+        hash_password(str, hash_algo)
+        count += 1
 
-    if count % iterations == 0:
-      if time.monotonic() - time_start >= 10:
-        qcounter.put(count)
-        break
+        if count % iterations == 0:
+            if time.monotonic() - time_start >= 10:
+                qcounter.put(count)
+                break
 
 
 def save_results(password, algo, charset, length, time, tool):
-  files = ["all.pkl", picklename]
-  for file in files:
-    data = []
-    try:
-      with open("results/" + file, "rb") as f:
-        data = pickle.load(f)
-    except:
-      pass
+    files = ["all.pkl", picklename]
+    for file in files:
+        data = []
+        try:
+            with open("results/" + file, "rb") as f:
+                data = pickle.load(f)
+        except:
+            pass
 
-    data.append((password, algo, charset, length, time, tool))
+        data.append((password, algo, charset, length, time, tool))
 
-    with open("results/" + file, "wb") as f:
-      pickle.dump(data, f)
+        with open("results/" + file, "wb") as f:
+            pickle.dump(data, f)
+
 
 def get_color_weight(password):
-  color_weight = 0.0
+    color_weight = 0.0
 
-  if not set(password).isdisjoint(special_characters):
-    color_weight += 2.0
-  if not set(password).isdisjoint(digits):
-    color_weight += 0.5
-  if not set(password).isdisjoint(uppercase):
-    color_weight += 1.0
-  if not set(password).isdisjoint(lowercase):
-    color_weight += 1.0
+    if not set(password).isdisjoint(special_characters):
+        color_weight += 2.0
+    if not set(password).isdisjoint(digits):
+        color_weight += 0.5
+    if not set(password).isdisjoint(uppercase):
+        color_weight += 1.0
+    if not set(password).isdisjoint(lowercase):
+        color_weight += 1.0
 
-  return color_weight
+    return color_weight
+
 
 def generate_password(length, charset):
-  password = ""
-  for i in range(length):
-    password += random.choice(charset)
+    password = ""
+    for i in range(length):
+        password += random.choice(charset)
 
-  return password
+    return password
+
 
 def main(mode, hash, proc, hash_algo):
-  if mode == 0 or mode == 2:
-    print("Using " + str(proc) + " processes to brute force...")
+    if mode == 0 or mode == 2:
+        print("Using " + str(proc) + " processes to brute force...")
 
-    base = len(chars)
-    efound = multiprocessing.Event()
-    qresult = multiprocessing.Queue()
+        base = len(chars)
+        efound = multiprocessing.Event()
+        qresult = multiprocessing.Queue()
 
-    time_start = time.monotonic()
+        time_start = time.monotonic()
 
-    for i in range(1, 10):
-      if(efound.is_set()):
-        break
+        for i in range(1, 10):
+            if(efound.is_set()):
+                break
 
-      print("Trying passwords with length " + str(i))
-      total = base ** i
-      chunk = total // proc
-      processes = []
-      ranges = []
-      for j in range(proc):
-        first = chunk*j
-        if j == proc - 1:
-          last = total
-        else:
-          last = chunk*(j+1)
-        ranges.append([first, last])
+            print("Trying passwords with length " + str(i))
+            total = base ** i
+            chunk = total // proc
+            processes = []
+            ranges = []
+            for j in range(proc):
+                first = chunk*j
+                if j == proc - 1:
+                    last = total
+                else:
+                    last = chunk*(j+1)
+                ranges.append([first, last])
 
-      for k in range(proc):
-        p = multiprocessing.Process(target=brute_force, args=(hash, chars, ranges[k], i, hash_algo, efound, qresult))
-        p.start()
-        processes.append(p)
+            for k in range(proc):
+                p = multiprocessing.Process(target=brute_force, args=(
+                    hash,
+                    chars,
+                    ranges[k],
+                    i,
+                    hash_algo,
+                    efound,
+                    qresult
+                    ))
+                p.start()
+                processes.append(p)
 
-      while True:
-        if not qresult.empty():
-          guess = qresult.get()
-          time_end = time.monotonic()
-          elapsed = time_end - time_start
-          print("Found password: " + guess)
-          print("Elapsed time: " + format_time(elapsed))
-          print("----")
+            while True:
+                if not qresult.empty():
+                    guess = qresult.get()
+                    time_end = time.monotonic()
+                    elapsed = time_end - time_start
+                    print("Found password: " + guess)
+                    print("Elapsed time: " + format_time(elapsed))
+                    print("----")
 
-          if mode == 0:
-            color_weight = get_color_weight(password)
-          else:
-            color_weight = weights[entropy]
+                    if mode == 0:
+                        color_weight = get_color_weight(password)
+                    else:
+                        color_weight = weights[entropy]
 
-          save_results(guess, hash_algo, color_weight, len(password), elapsed, "python")
+                    save_results(
+                        guess,
+                        hash_algo,
+                        color_weight,
+                        len(password),
+                        elapsed,
+                        "python"
+                    )
 
-          for p in processes:
-            # Stäng ned allt
-            p.terminate()
-          break
+                    for p in processes:
+                        # Stäng ned allt
+                        p.terminate()
+                    break
 
-        if all(not p.is_alive() for p in processes):
-          break
+                if all(not p.is_alive() for p in processes):
+                    break
 
-        time.sleep(0.01)
-  else:
-    measured = []
-    for i in range(10):
-      print("Benchmarking using " + str(proc) + " processes...")
-      bstring = "AAAAA"
-      processes = []
-      qcounter = multiprocessing.Queue()
-      total = 0
+                time.sleep(0.01)
+    else:
+        measured = []
+        for i in range(10):
+            print("Benchmarking using " + str(proc) + " processes...")
+            bstring = "AAAAA"
+            processes = []
+            qcounter = multiprocessing.Queue()
+            total = 0
 
-      for i in range(proc):
-        p = multiprocessing.Process(target=benchmark, args=(bstring, hash_algo, qcounter))
-        p.start()
-        processes.append(p)
+            for i in range(proc):
+                p = multiprocessing.Process(
+                    target=benchmark,
+                    args=(bstring, hash_algo, qcounter)
+                )
+                p.start()
+                processes.append(p)
 
-      time.sleep(11)
+            time.sleep(11)
 
-      for p in processes:
-        p.terminate()
+            for p in processes:
+                p.terminate()
 
-      while not qcounter.empty():
-        total += qcounter.get()
+            while not qcounter.empty():
+                total += qcounter.get()
 
-      efficiency = total / 10
-      measured.append(efficiency)
+            efficiency = total / 10
+            measured.append(efficiency)
 
-    efficiency_sum = sum(measured) / 10
-    print("Estimated pure hashing efficiency: " + str(efficiency_sum) + " H/s")
+        efficiency_sum = sum(measured) / 10
+        print("Estimated pure hashing efficiency: " + str(efficiency_sum) + " H/s")
+
 
 def format_time(time):
-  if time > 60 and time > (60 * 60) and time > (60 * 60 * 24):
-    return str(round(time / (60 * 60 * 24), 2)) + "d"
-  elif time > 60 and time > (60 * 60):
-    return str(round(time / (60 * 60), 2)) + "h"
-  elif time > 60:
-    return str(round(time / 60, 2)) + "m"
-  else:
-    return str(round(time, 2)) + "s"
+    if time > 60 and time > (60 * 60) and time > (60 * 60 * 24):
+        return str(round(time / (60 * 60 * 24), 2)) + "d"
+    elif time > 60 and time > (60 * 60):
+        return str(round(time / (60 * 60), 2)) + "h"
+    elif time > 60:
+        return str(round(time / 60, 2)) + "m"
+    else:
+        return str(round(time, 2)) + "s"
+
 
 def hashcat_main(hash, hash_algo):
-  if mode == 0 or mode == 2:
-    result = hashcat.crack(hash, hashcat.hash_map[hash_algo])
-    print(result[0], format_time(result[1]))
-    print("----")
-    if mode == 0:
-      color_weight = get_color_weight(password)
+    if mode == 0 or mode == 2:
+        result = hashcat.crack(hash, hashcat.hash_map[hash_algo])
+        print(result[0], format_time(result[1]))
+        print("----")
+        if mode == 0:
+            color_weight = get_color_weight(password)
+        else:
+            color_weight = weights[entropy]
+        save_results(
+            result[0],
+            hash_algo,
+            color_weight,
+            len(password),
+            result[1],
+            "hashcat"
+        )
     else:
-      color_weight = weights[entropy]
-    save_results(result[0], hash_algo, color_weight, len(password), result[1], "hashcat")
-  else:
-    list = []
-    for i in range(10):
-      result = hashcat.benchmark(hashcat.hash_map[hash_algo])
-      list.append(result[0])
-      print("Test " + str(i + 1) + ":")
-      print(str(result[0]) + " " + str(result[1]))
-      print("----")
-    print("Average: " + str(sum(list) / 10))
+        list = []
+        for i in range(10):
+            result = hashcat.benchmark(hashcat.hash_map[hash_algo])
+            list.append(result[0])
+            print("Test " + str(i + 1) + ":")
+            print(str(result[0]) + " " + str(result[1]))
+            print("----")
+        print("Average: " + str(sum(list) / 10))
 
 # Huvudprocess
 if __name__ == '__main__':
-  # Skicka in lösenord och kör brute force
-  mode = int(input("Mode (Brute force <0>, Benchmark <1>, Fixed <2>): "))
-  enable_random = False
-  test_all_hashes = False
-  length = None
-  password = None
-  iterate = False
-  repeat = 1
-  charset = ""
-  hash = None
-  tool = int(input("Tool (python <0>, hashcat <1>): "))
-  if mode == 0:
-    enable_random = bool(int(input("Use random password? (0/1): ")))
-    if enable_random:
-      length = int(input("Password length: "))
-      if input("Use special characters? (0/1): ") == "1":
-        charset += special_characters
-      if input("Use digits? (0/1): ") == "1":
-        charset += digits
-      if input("Use uppercase? (0/1): ") == "1":
-        charset += uppercase
-      if input("Use lowercase? (0/1): ") == "1":
-        charset += lowercase
-      iterate = bool(int(input("Iterate through length? (0/1): ")))
-      repeat = int(input("Repeat? (0/1): "))
-      if repeat == 1:
-        repeat = int(input("Repeat amount: "))
-      else:
-        repeat = 1
-    else:
-      password = input("Password: ")
-
-    test_all_hashes = bool(int(input("Test all hashes? (0/1): ")))
-    if not test_all_hashes:
-      hash_algo = hash_types[int(input("Hash type (sha256 <0>, bcrypt <1>, md5 <2>): "))]
-  else:
-    hash_algo = hash_types[int(input("Hash type (sha256 <0>, bcrypt <1>, md5 <2>): "))]
-    if mode == 2:
-      floor = int(input("Min character count (1-6): "))
-      roof = int(input("Max character count (1-6): "))
-      entropy = int(input("Select entropy (Numbers only <0>, All characters <1>): "))
-
-  if tool == 0:
-    proc = int(input("Amount of processes to be used: "))
-
-  if mode != 1:
-    picklename = input("Separate file to write to: ") + ".pkl"
-
-  if mode != 2:
-    for j in range(repeat):
-      if test_all_hashes and iterate:
-        for hashtype in hash_types:
-          for i in range(1, length + 1):
-            if mode == 0:
-              if enable_random:
-                password = generate_password(i, charset)
-              hash = hash_password(password, hashtype)
-
-            if tool == 0:
-              main(mode, hash, proc, hashtype)
+    # Skicka in lösenord och kör brute force
+    mode = int(input("Mode (Brute force <0>, Benchmark <1>, Fixed <2>): "))
+    enable_random = False
+    test_all_hashes = False
+    length = None
+    password = None
+    iterate = False
+    repeat = 1
+    charset = ""
+    hash = None
+    tool = int(input("Tool (python <0>, hashcat <1>): "))
+    if mode == 0:
+        enable_random = bool(int(input("Use random password? (0/1): ")))
+        if enable_random:
+            length = int(input("Password length: "))
+            if input("Use special characters? (0/1): ") == "1":
+                charset += special_characters
+            if input("Use digits? (0/1): ") == "1":
+                charset += digits
+            if input("Use uppercase? (0/1): ") == "1":
+                charset += uppercase
+            if input("Use lowercase? (0/1): ") == "1":
+                charset += lowercase
+            iterate = bool(int(input("Iterate through length? (0/1): ")))
+            repeat = int(input("Repeat? (0/1): "))
+            if repeat == 1:
+                repeat = int(input("Repeat amount: "))
             else:
-              hashcat_main(hash, hashtype)
-      elif test_all_hashes:
-        for hashtype in hash_types:
-          if mode == 0:
-            if enable_random:
-              password = generate_password(length, charset)
-            hash = hash_password(password, hashtype)
-
-          if tool == 0:
-            main(mode, hash, proc, hashtype)
-          else:
-            hashcat_main(hash, hashtype)
-      elif iterate:
-        for i in range(1, length + 1):
-          if mode == 0:
-            if enable_random:
-              password = generate_password(i, charset)
-            hash = hash_password(password, hash_algo)
-
-          if tool == 0:
-            main(mode, hash, proc, hash_algo)
-          else:
-            hashcat_main(hash, hash_algo)
-      else:
-        if mode == 0:
-          if enable_random:
-            password = generate_password(length, charset)
-          hash = hash_password(password, hash_algo)
-
-        if tool == 0:
-          main(mode, hash, proc, hash_algo)
+                repeat = 1
         else:
-          hashcat_main(hash, hash_algo)
-  else:
-    if entropy == 0:
-      filename = "passwords/digits.txt"
-    elif entropy == 1:
-      filename = "passwords/special.txt"
-    passwords = open(filename, "r")
-    lines = passwords.readlines()
+            password = input("Password: ")
 
-    for i in range(floor, roof + 1):
-      for j in range(10):
-        line = (i - 1) * 10 + j
-        password = lines[line].strip()
-        hash = hash_password(password, hash_algo)
-        if tool == 0:
-          main(mode, hash, 8, hash_algo)
-        else:
-          hashcat_main(hash, hash_algo)
+        test_all_hashes = bool(int(input("Test all hashes? (0/1): ")))
+        if not test_all_hashes:
+            hash_algo = hash_types[int(input("Hash type (sha256 <0>, bcrypt <1>, md5 <2>): "))]
+    else:
+        hash_algo = hash_types[int(input("Hash type (sha256 <0>, bcrypt <1>, md5 <2>): "))]
+        if mode == 2:
+            floor = int(input("Min character count (1-6): "))
+            roof = int(input("Max character count (1-6): "))
+            entropy = int(input("Select entropy (Numbers only <0>, All characters <1>): "))
+
+    if tool == 0:
+        proc = int(input("Amount of processes to be used: "))
+
+    if mode != 1:
+        picklename = input("Separate file to write to: ") + ".pkl"
+
+    if mode != 2:
+        for j in range(repeat):
+            if test_all_hashes and iterate:
+                for hashtype in hash_types:
+                    for i in range(1, length + 1):
+                        if mode == 0:
+                            if enable_random:
+                                password = generate_password(i, charset)
+                            hash = hash_password(password, hashtype)
+
+                        if tool == 0:
+                            main(mode, hash, proc, hashtype)
+                        else:
+                            hashcat_main(hash, hashtype)
+            elif test_all_hashes:
+                for hashtype in hash_types:
+                    if mode == 0:
+                        if enable_random:
+                            password = generate_password(length, charset)
+                        hash = hash_password(password, hashtype)
+
+                    if tool == 0:
+                        main(mode, hash, proc, hashtype)
+                    else:
+                        hashcat_main(hash, hashtype)
+            elif iterate:
+                for i in range(1, length + 1):
+                    if mode == 0:
+                        if enable_random:
+                            password = generate_password(i, charset)
+                        hash = hash_password(password, hash_algo)
+
+                    if tool == 0:
+                        main(mode, hash, proc, hash_algo)
+                    else:
+                        hashcat_main(hash, hash_algo)
+            else:
+                if mode == 0:
+                    if enable_random:
+                        password = generate_password(length, charset)
+                    hash = hash_password(password, hash_algo)
+
+                if tool == 0:
+                    main(mode, hash, proc, hash_algo)
+                else:
+                    hashcat_main(hash, hash_algo)
+    else:
+        if entropy == 0:
+            filename = "passwords/digits.txt"
+        elif entropy == 1:
+            filename = "passwords/special.txt"
+        passwords = open(filename, "r")
+        lines = passwords.readlines()
+
+        for i in range(floor, roof + 1):
+            for j in range(10):
+                line = (i - 1) * 10 + j
+                password = lines[line].strip()
+                hash = hash_password(password, hash_algo)
+                if tool == 0:
+                    main(mode, hash, 8, hash_algo)
+                else:
+                    hashcat_main(hash, hash_algo)

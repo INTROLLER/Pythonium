@@ -14,6 +14,7 @@ hash_map = {
     "bcrypt": "3200"
 }
 
+
 def crack(hash, hashtype):
     if out_file.exists():
         out_file.unlink()
@@ -46,6 +47,7 @@ def crack(hash, hashtype):
         return password, elapsed
 
     return None, None
+
 
 def benchmark(hashtype):
     if out_file.exists():
