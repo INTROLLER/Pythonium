@@ -5,9 +5,9 @@ Detta är ett repository innehållande all programkod och rådata som användes 
 ## Innehåll
 ### Rotmappens innehåll
 - main.py - Huvudprogrammet som använts under experimentet. Kan köras i tre olika lägen: 
- 0: Enskilda testattacker på valfritt eller slumpat lösenord
- 1: Upprepade benchmarkmätningar samt ett medelvärde för dessa 
- 2: En komplett uppsättning av attacker mot en mängd lösenord i repots lösenordsmapp. (Det är i detta läge som rådata har tagits fram)
+    0. Enskilda testattacker på valfritt eller slumpat lösenord
+    1. Upprepade benchmarkmätningar samt ett medelvärde för dessa 
+    2. En komplett uppsättning av attacker mot en mängd lösenord i repots lösenordsmapp. (Det är i detta läge som rådata har tagits fram)
 - hashcat.py - Egentillverkad modul som huvudprogrammet använder för att anropa Hashcat under särskilda attacker.
 - Övriga skript - Hjälpprogram för hantering av rådata.
 
